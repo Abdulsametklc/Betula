@@ -1,0 +1,70 @@
+1. Yeni Mimari ve Teknoloji Yığını (Tech Stack Dönüşümü)
+Ollama devreden çıktığı için bulut tabanlı, geniş bağlam pencereli (context window) ve ucuz/hızlı modellere geçmemiz gerekiyor.
+
+LLM Sağlayıcısı: Gemini 1.5 Flash/Pro (çok uzun PDF'leri tek seferde hafızada tutabilmek için devasa bağlam penceresine sahip) veya OpenAI (gpt-4o-mini). Bu sayede bilgisayarını yormadan çok daha zeki çıkarımlar yapabilirsin.
+
+Ajan (Agent) Orkestrasyonu: Sadece LangChain yerine LangGraph. Çünkü "PDF'i oku -> eksikleri bul -> internette ara -> notları birleştir" süreci döngüsel ve durum (state) takibi gerektiren bir iş akışıdır.
+
+Web Araştırma Aracı: Tavily Search API veya DuckDuckGo API (LangChain entegrasyonu ile web'den eksik notları çekmek için).
+
+Veritabanı ve Vektör: Mevcut SQLite (multi-tenant yapısı için) ve FAISS (veya kalıcılığı daha kolay yönetmek için ChromaDB) tutulabilir. Ölçeklendirme aşamasında PostgreSQL'e geçiş yapılabilir.
+
+2. Akıllı Derleme ve Araştırma Boru Hattı (The Pipeline)
+Sistemin kalbi bu yeni iş akışı olacak. Kullanıcı bir PDF yüklediğinde arka planda şu otonom adımlar çalışacak:
+
+Adım 1: Yapısal Ayrıştırma (Parsing & Ingestion)
+
+Standart PDF okuyucular (PyPDF) tabloları ve başlıkları bozabilir. PDF'teki karmaşıklığı en aza indirmek için LlamaParse veya PyMuPDF kullanılarak belge okunur.
+
+Metin, anlamsal bütünlüğü bozulmadan chunk'lara (parçalara) ayrılır.
+
+Adım 2: Teşhis ve Boşluk Analizi (Diagnostic Prompting)
+
+LLM'e şu görev verilir: "Bu çalışma notlarını oku. Hangi konular karmaşık veya yarım bırakılmış? Hangi terimlerin açıklaması eksik? Bana araştırılması gereken eksik başlıkların bir listesini ver."
+
+Model, PDF'in taslağını çıkarır ve bir "Eksikler/Kopukluklar Listesi" (Gap List) döndürür.
+
+Adım 3: Otonom Araştırma (Web Search Agent)
+
+Sistem, tespit edilen eksik başlıklar için internette arama yapar.
+
+Güvenilir kaynaklardan (örneğin Wikipedia, akademik dökümanlar veya belirteceğin spesifik siteler) bu konuların net ve anlaşılır açıklamalarını çeker.
+
+Adım 4: Master Sentez ve Düzenleme (Synthesis)
+
+LLM, orijinal PDF notlarını ve web'den gelen yeni bilgileri harmanlar.
+
+Konuları hiyerarşik bir düzene sokar (Başlıklar, Alt Başlıklar, Önemli Uyarılar).
+
+Elde edilen sonuç; düzenli, eksiksiz, okuması keyifli bir Markdown formatında derlenir.
+
+3. Geliştirme ve Aksiyon Planı
+Projeyi ayağa kaldırmak için adım adım izlenmesi gereken rota:
+
+Faz 1: Temizlik ve Bulut Geçişi (Hafta 1)
+Ölü Kodların Budanması: Ollama bağlantıları, eski pdf_handler.py ve kullanılmayan arayüz kodları temizlenmeli.
+
+API Entegrasyonu: Seçilen bulut LLM (Gemini/OpenAI) LangChain içerisine entegre edilmeli.
+
+Kalıcılık (Persistence) Çözümü: FAISS vektör veritabanının bellekte uçup gitmemesi için diske kaydetme (save_local) fonksiyonları aktif edilmeli, böylece kullanıcı sayfayı yenilediğinde RAG bozulmamalı.
+
+Faz 2: Agentic Workflow'un (Araştırmacı Ajan) İnşası (Hafta 2)
+Belge yüklendiğinde çalışacak LangGraph akışının kodlanması.
+
+Düğüm 1: Belgeyi özetle ve yapılandır.
+
+Düğüm 2: Belgedeki mantıksal boşlukları tespit et.
+
+Düğüm 3: Boşluklar için Web Arama aracını (Tavily/Google) tetikle.
+
+Düğüm 4: Tüm veriyi "Kusursuz Çalışma Notu" formatında birleştir.
+
+Faz 3: Arayüz (Streamlit) ve Yarım Kalan Özelliklerin Bağlanması (Hafta 3)
+Üretilen "Derlenmiş Notların" Streamlit arayüzünde şık bir Markdown veya indirilebilir PDF/DOCX olarak sunulması.
+
+Daha önce backend'de yazılmış ama arayüze bağlanmamış olan Sohbet Geçmişi (Chat History) ve Hafıza Motoru (Memory Engine) özelliklerinin yeni bulut LLM ile aktif hale getirilmesi. (Örneğin, kullanıcının "Ben şu konuları zor anlıyorum" verisini sistemin hafızada tutması).
+
+Faz 4: Çıktı Zenginleştirme (Ekstra Geliştirmeler)
+Derlenen kusursuz notlardan otomatik olarak "Spaced Repetition" (Aralıklı Tekrar) için Flashcard'lar üretilmesi (önceki kodda temeli var, sadece yeni veriye bağlanacak).
+
+Notlar üzerinden kullanıcıyı test edecek Quiz modülünün aktif edilmesi.

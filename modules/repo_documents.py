@@ -12,42 +12,33 @@ from .db import get_db, require_user_id, execute_query, execute_many
 # ============== DOCUMENT FONKSIYONLARI ==============
 
 @require_user_id
-def create_document(filename: str, content: str, doc_type: str, *, user_id: int, checksum: str = None) -> int:
-    """Yeni dokuman kaydeder.
-    
-    Args:
-        filename: Dosya adi
-        content: Dokuman icerigi
-        doc_type: Dosya tipi (pdf, docx, etc.)
-        user_id: Kullanici ID (zorunlu keyword arg)
-        checksum: Dosya hash (duplicate kontrolu icin)
-        
-    Returns:
-        Yeni document_id
-    """
+def create_document(filename: str, content: str, doc_type: str, *, user_id: int, checksum: str = None, session_id: int = None) -> int:
+    """Yeni dokuman kaydeder."""
     with get_db() as conn:
         cursor = conn.execute(
-            """INSERT INTO documents (user_id, filename, content, doc_type, checksum) 
-               VALUES (?, ?, ?, ?, ?)""",
-            (user_id, filename, content, doc_type, checksum)
+            """INSERT INTO documents (user_id, session_id, filename, content, doc_type, checksum) 
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (user_id, session_id, filename, content, doc_type, checksum)
         )
         conn.commit()
         return cursor.lastrowid
 
 
 @require_user_id
-def get_documents(*, user_id: int, limit: int = 100) -> list:
-    """Kullanicinin tum dokumanlarini listeler.
-    
-    Args:
-        user_id: Kullanici ID (zorunlu keyword arg)
-        limit: Maksimum kayit sayisi
-        
-    Returns:
-        Document listesi
-    """
+def get_documents(*, user_id: int, session_id: int = None, limit: int = 100) -> list:
+    """Kullanicinin dokumanlarini listeler (oturum filtresi ile)."""
+    if session_id:
+        return execute_query(
+            """SELECT id, filename, doc_type, upload_date, is_processed, session_id
+               FROM documents 
+               WHERE user_id = ? AND session_id = ?
+               ORDER BY upload_date DESC 
+               LIMIT ?""",
+            (user_id, session_id, limit),
+            fetch='all'
+        )
     return execute_query(
-        """SELECT id, filename, doc_type, upload_date, is_processed 
+        """SELECT id, filename, doc_type, upload_date, is_processed, session_id
            FROM documents 
            WHERE user_id = ? 
            ORDER BY upload_date DESC 
@@ -200,23 +191,14 @@ def create_flashcard(question: str, answer: str, *, user_id: int, document_id: i
 
 
 @require_user_id
-def create_flashcards_bulk(flashcards_list: list, *, user_id: int, document_id: int = None) -> int:
-    """Birden fazla flashcard kaydeder.
-    
-    Args:
-        flashcards_list: [{'question': '...', 'answer': '...', 'difficulty': '...'}, ...]
-        user_id: Kullanici ID (zorunlu keyword arg)
-        document_id: Ilgili dokuman (opsiyonel)
-        
-    Returns:
-        Eklenen kayit sayisi
-    """
+def create_flashcards_bulk(flashcards_list: list, *, user_id: int, document_id: int = None, session_id: int = None) -> int:
+    """Birden fazla flashcard kaydeder."""
     params_list = [
-        (user_id, document_id, card['question'], card['answer'], card.get('difficulty', 'orta'))
+        (user_id, session_id, document_id, card['question'], card['answer'], card.get('difficulty', 'orta'))
         for card in flashcards_list
     ]
     return execute_many(
-        "INSERT INTO flashcards (user_id, document_id, question, answer, difficulty) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO flashcards (user_id, session_id, document_id, question, answer, difficulty) VALUES (?, ?, ?, ?, ?, ?)",
         params_list
     )
 
@@ -258,22 +240,36 @@ def get_flashcards(*, user_id: int, document_id: int = None, limit: int = 100) -
 
 
 @require_user_id
-def get_flashcards_for_review(*, user_id: int, limit: int = 10) -> list:
-    """Tekrar edilmesi gereken kartlari getirir (spaced repetition).
-    
-    Args:
-        user_id: Kullanici ID (zorunlu keyword arg)
-        limit: Maksimum kart sayisi
-        
-    Returns:
-        Review edilecek flashcard listesi
-    """
+def get_flashcards_for_review(*, user_id: int, limit: int = 50, document_id: int = None, session_id: int = None) -> list:
+    """Kartlari sirayla gostermek icin listeler."""
+    if document_id:
+        return execute_query(
+            """SELECT f.id, d.filename, f.question, f.answer, f.difficulty, f.times_reviewed
+               FROM flashcards f 
+               LEFT JOIN documents d ON f.document_id = d.id 
+               WHERE f.user_id = ? AND f.document_id = ?
+               ORDER BY f.id ASC
+               LIMIT ?""",
+            (user_id, document_id, limit),
+            fetch='all'
+        )
+    if session_id:
+        return execute_query(
+            """SELECT f.id, d.filename, f.question, f.answer, f.difficulty, f.times_reviewed
+               FROM flashcards f 
+               LEFT JOIN documents d ON f.document_id = d.id 
+               WHERE f.user_id = ? AND f.session_id = ?
+               ORDER BY f.id ASC
+               LIMIT ?""",
+            (user_id, session_id, limit),
+            fetch='all'
+        )
     return execute_query(
         """SELECT f.id, d.filename, f.question, f.answer, f.difficulty, f.times_reviewed
            FROM flashcards f 
            LEFT JOIN documents d ON f.document_id = d.id 
-           WHERE f.user_id = ? AND (f.next_review IS NULL OR f.next_review <= datetime('now'))
-           ORDER BY f.times_reviewed ASC, RANDOM()
+           WHERE f.user_id = ?
+           ORDER BY f.id ASC
            LIMIT ?""",
         (user_id, limit),
         fetch='all'
@@ -282,59 +278,29 @@ def get_flashcards_for_review(*, user_id: int, limit: int = 10) -> list:
 
 @require_user_id
 def update_flashcard_review(flashcard_id: int, is_correct: bool, *, user_id: int) -> bool:
-    """Flashcard tekrar sonucunu gunceller.
-    
-    Args:
-        flashcard_id: Flashcard ID
-        is_correct: Dogru mu yanlıs mi
-        user_id: Kullanici ID (zorunlu keyword arg)
-        
-    Returns:
-        True eger guncelleme basarili ise
-    """
-    # Once flashcard'in bu user'a ait oldugunu kontrol et
+    """Kart bakildi olarak isaretler (sadece sayac + history; tarih plani yok)."""
     card = execute_query(
         "SELECT times_reviewed, times_correct FROM flashcards WHERE id = ? AND user_id = ?",
         (flashcard_id, user_id),
         fetch='one'
     )
-    
     if not card:
         return False
-    
+
     times_reviewed = card['times_reviewed'] + 1
     times_correct = card['times_correct'] + (1 if is_correct else 0)
-    
-    # Spaced repetition - basari oranina gore sonraki tekrar
-    if is_correct:
-        success_rate = times_correct / times_reviewed if times_reviewed > 0 else 0
-        if success_rate >= 0.8:
-            days = 30
-        elif success_rate >= 0.6:
-            days = 14
-        elif success_rate >= 0.4:
-            days = 7
-        else:
-            days = 3
-    else:
-        days = 1
-    
+
     with get_db() as conn:
         conn.execute(
             """UPDATE flashcards 
-               SET times_reviewed = ?, times_correct = ?, 
-                   last_reviewed = datetime('now'), 
-                   next_review = datetime('now', '+' || ? || ' days')
+               SET times_reviewed = ?, times_correct = ?, last_reviewed = datetime('now')
                WHERE id = ? AND user_id = ?""",
-            (times_reviewed, times_correct, days, flashcard_id, user_id)
+            (times_reviewed, times_correct, flashcard_id, user_id)
         )
-        
-        # Learning history'e kaydet
         conn.execute(
             "INSERT INTO learning_history (user_id, flashcard_id, result) VALUES (?, ?, ?)",
             (user_id, flashcard_id, 'correct' if is_correct else 'incorrect')
         )
-        
         conn.commit()
         return True
 
@@ -407,6 +373,227 @@ def create_quiz_questions_bulk(questions_list: list, *, user_id: int, document_i
            VALUES (?, ?, ?, ?, ?, ?, ?)""",
         params_list
     )
+
+
+@require_user_id
+def create_quiz_questions_return_ids(questions_list: list, *, user_id: int, document_id: int = None, session_id: int = None) -> list:
+    """Sorulari tek tek kaydeder ve olusan id'leri sirayla dondurur."""
+    ids = []
+    with get_db() as conn:
+        for q in questions_list:
+            cursor = conn.execute(
+                """INSERT INTO quiz_questions 
+                   (user_id, session_id, document_id, question_type, question_text, options, correct_answer, explanation) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    user_id,
+                    session_id,
+                    document_id,
+                    q.get('type', 'multiple_choice'),
+                    q['question'],
+                    '|||'.join(q.get('options', [])) if q.get('options') else '',
+                    q['answer'],
+                    q.get('explanation', ''),
+                ),
+            )
+            ids.append(cursor.lastrowid)
+        conn.commit()
+    return ids
+
+
+@require_user_id
+def get_archived_quiz_texts(*, user_id: int, document_id: int = None, limit: int = 300) -> list:
+    """Tamamlanip arsivlenen quiz soru metinlerini dondurur (tekrar sorulmamali).
+    Yarim kalan quiz'lerdeki sorular buraya girmez; tekrar sorulabilir.
+    """
+    if document_id:
+        rows = execute_query(
+            """SELECT DISTINCT i.question_text
+               FROM quiz_attempt_items i
+               JOIN quiz_attempts a ON a.id = i.attempt_id
+               WHERE i.user_id = ? AND a.user_id = ? AND a.document_id = ?
+                 AND i.question_text IS NOT NULL AND TRIM(i.question_text) != ''
+               ORDER BY i.id DESC LIMIT ?""",
+            (user_id, user_id, document_id, limit),
+            fetch='all',
+        )
+    else:
+        rows = execute_query(
+            """SELECT DISTINCT i.question_text
+               FROM quiz_attempt_items i
+               JOIN quiz_attempts a ON a.id = i.attempt_id
+               WHERE i.user_id = ? AND a.user_id = ?
+                 AND i.question_text IS NOT NULL AND TRIM(i.question_text) != ''
+               ORDER BY i.id DESC LIMIT ?""",
+            (user_id, user_id, limit),
+            fetch='all',
+        )
+    return [r['question_text'] for r in rows if r.get('question_text')]
+
+
+@require_user_id
+def get_reusable_quiz_questions(
+    *,
+    user_id: int,
+    document_id: int = None,
+    session_id: int = None,
+    limit: int = 50,
+    topic: str = None,
+) -> list:
+    """Arsivde olmayan (tamamlanmamis) sorulari rastgele dondurur — tekrar sorulabilir."""
+    params: list = [user_id]
+    sql = """
+        SELECT q.id, q.question_type, q.question_text, q.options
+        FROM quiz_questions q
+        WHERE q.user_id = ?
+          AND q.id NOT IN (
+              SELECT DISTINCT question_id FROM quiz_attempt_items
+              WHERE user_id = ? AND question_id IS NOT NULL
+          )
+    """
+    params.append(user_id)
+    if session_id:
+        sql += " AND q.session_id = ?"
+        params.append(session_id)
+    if document_id:
+        sql += " AND q.document_id = ?"
+        params.append(document_id)
+    sql += " ORDER BY RANDOM() LIMIT ?"
+    params.append(limit)
+    rows = execute_query(sql, tuple(params), fetch='all')
+    for r in rows:
+        raw = r.get('options')
+        r['options'] = [o for o in str(raw).split('|||') if o] if raw else []
+    return rows
+
+
+@require_user_id
+def get_quiz_questions_by_ids(ids: list, *, user_id: int) -> list:
+    """Belirtilen id'lere sahip sorulari (cevapsiz) dondurur - sira korunur."""
+    if not ids:
+        return []
+    placeholders = ','.join('?' for _ in ids)
+    rows = execute_query(
+        f"""SELECT id, question_type, question_text, options, explanation
+            FROM quiz_questions WHERE user_id = ? AND id IN ({placeholders})""",
+        (user_id, *ids),
+        fetch='all',
+    )
+    by_id = {r['id']: r for r in rows}
+    return [by_id[i] for i in ids if i in by_id]
+
+
+@require_user_id
+def create_quiz_attempt(*, user_id: int, document_id: int = None, session_id: int = None, topic: str = None, items: list) -> dict:
+    """Cozulmus quiz'i arsivler."""
+    total = len(items)
+    correct = sum(1 for it in items if it.get('is_correct'))
+    score = round(correct * 100.0 / total, 1) if total else 0.0
+
+    with get_db() as conn:
+        cursor = conn.execute(
+            """INSERT INTO quiz_attempts 
+               (user_id, session_id, document_id, topic, total_questions, correct_count, score_pct) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (user_id, session_id, document_id, topic, total, correct, score),
+        )
+        attempt_id = cursor.lastrowid
+        for it in items:
+            opts = it.get('options') or []
+            conn.execute(
+                """INSERT INTO quiz_attempt_items 
+                   (attempt_id, user_id, question_id, question_type, question_text, options,
+                    given_answer, correct_answer, is_correct, explanation) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    attempt_id,
+                    user_id,
+                    it.get('question_id'),
+                    it.get('question_type'),
+                    it.get('question_text'),
+                    '|||'.join(opts) if isinstance(opts, list) else str(opts or ''),
+                    it.get('given_answer'),
+                    it.get('correct_answer'),
+                    1 if it.get('is_correct') else 0,
+                    it.get('explanation', ''),
+                ),
+            )
+        conn.commit()
+
+    return {
+        'id': attempt_id,
+        'total_questions': total,
+        'correct_count': correct,
+        'score_pct': score,
+    }
+
+
+@require_user_id
+def list_quiz_attempts(*, user_id: int, session_id: int = None, limit: int = 50) -> list:
+    """Kullanicinin quiz arsivini (ozet) listeler."""
+    if session_id:
+        return execute_query(
+            """SELECT a.id, a.document_id, d.filename, a.topic, a.total_questions,
+                      a.correct_count, a.score_pct, a.created_at
+               FROM quiz_attempts a
+               LEFT JOIN documents d ON a.document_id = d.id
+               WHERE a.user_id = ? AND a.session_id = ?
+               ORDER BY a.created_at DESC LIMIT ?""",
+            (user_id, session_id, limit),
+            fetch='all',
+        )
+    return execute_query(
+        """SELECT a.id, a.document_id, d.filename, a.topic, a.total_questions,
+                  a.correct_count, a.score_pct, a.created_at
+           FROM quiz_attempts a
+           LEFT JOIN documents d ON a.document_id = d.id
+           WHERE a.user_id = ?
+           ORDER BY a.created_at DESC LIMIT ?""",
+        (user_id, limit),
+        fetch='all',
+    )
+
+
+@require_user_id
+def get_quiz_attempt(attempt_id: int, *, user_id: int) -> Optional[dict]:
+    """Bir quiz denemesinin detayini (sorularla) dondurur."""
+    attempt = execute_query(
+        """SELECT a.id, a.document_id, d.filename, a.topic, a.total_questions,
+                  a.correct_count, a.score_pct, a.created_at
+           FROM quiz_attempts a
+           LEFT JOIN documents d ON a.document_id = d.id
+           WHERE a.id = ? AND a.user_id = ?""",
+        (attempt_id, user_id),
+        fetch='one',
+    )
+    if not attempt:
+        return None
+    items = execute_query(
+        """SELECT question_id, question_type, question_text, options,
+                  given_answer, correct_answer, is_correct, explanation
+           FROM quiz_attempt_items WHERE attempt_id = ? AND user_id = ?
+           ORDER BY id ASC""",
+        (attempt_id, user_id),
+        fetch='all',
+    )
+    for it in items:
+        raw = it.get('options')
+        it['options'] = [o for o in str(raw).split('|||') if o] if raw else []
+        it['is_correct'] = bool(it.get('is_correct'))
+    attempt['items'] = items
+    return attempt
+
+
+@require_user_id
+def delete_quiz_attempt(attempt_id: int, *, user_id: int) -> bool:
+    """Bir quiz denemesini arsivden siler."""
+    with get_db() as conn:
+        cursor = conn.execute(
+            "DELETE FROM quiz_attempts WHERE id = ? AND user_id = ?",
+            (attempt_id, user_id),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
 
 
 @require_user_id

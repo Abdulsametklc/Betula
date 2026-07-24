@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Betula — Çalışma Oturumları</title>
+<link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: "#c2652a",
+          "on-primary": "#ffffff",
+          "primary-container": "#ffdbcc",
+          "on-primary-container": "#3b0a00",
+          secondary: "#765749",
+          background: "#fff8f6",
+          "on-background": "#221a16",
+          surface: "#fff8f6",
+          "on-surface": "#221a16",
+          "on-surface-variant": "#52443d",
+          "outline-variant": "#d7c2b9",
+          "surface-container-lowest": "#ffffff",
+          "surface-container": "#fceae3",
+          "surface-container-high": "#f6e4dd",
+        },
+        fontFamily: { sans: ["Manrope", "sans-serif"] },
+      },
+    },
+  };
+</script>
+<style>
+  body {
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(194,101,42,0.12), transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, rgba(100,96,50,0.1), transparent 50%),
+      #fff8f6;
+    color: #221a16;
+    min-height: 100vh;
+  }
+  .session-card {
+    background: rgba(255,255,255,0.82);
+    border: 1px solid #d7c2b9;
+    backdrop-filter: blur(8px);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .session-card:hover {
+    transform: translateY(-4px);
+    border-color: #c2652a;
+    box-shadow: 0 14px 30px rgba(194,101,42,0.12);
+  }
+  .session-card.enter {
+    animation: card-in 0.45s ease both;
+  }
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-backdrop { background: rgba(34,26,22,0.45); backdrop-filter: blur(6px); }
+  .primary-btn { background: #c2652a; color: #fff; }
+  .primary-btn:hover { background: #b0571f; }
+</style>
+</head>
+<body class="font-sans antialiased">
+<header class="max-w-6xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
+  <a href="/" class="flex items-center gap-3">
+    <img src="/static/assets/betula-logo.png" alt="Betula" class="w-10 h-10 object-contain"/>
+    <div>
+      <h1 class="text-xl font-bold tracking-tight text-primary">Betula</h1>
+      <p class="text-xs uppercase tracking-widest text-on-surface-variant">Çalışma oturumları</p>
+    </div>
+  </a>
+  <div class="flex items-center gap-3">
+    <span id="user-chip" class="text-sm text-on-surface-variant"></span>
+    <button id="btn-logout" class="text-sm text-on-surface-variant hover:text-primary">Çıkış</button>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 pb-16">
+  <section class="mt-6 mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+    <div>
+      <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-background">Oturumlarını seç</h2>
+      <p class="mt-2 text-on-surface-variant max-w-xl">
+        Her oturum kendi kaynakları, sohbetleri, quiz arşivi ve eksik bilgileriyle ayrı bir çalışma alanıdır.
+      </p>
+    </div>
+    <button id="btn-new-session" class="primary-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold shadow-sm">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Yeni oturum
+    </button>
+  </section>
+
+  <div id="sessions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <p class="text-on-surface-variant text-sm col-span-full">Yükleniyor…</p>
+  </div>
+</main>
+
+<!-- Create / rename modal -->
+<div id="session-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-xl w-full max-w-md p-6">
+    <h3 id="modal-title" class="text-lg font-semibold text-on-surface mb-4">Yeni oturum</h3>
+    <label class="block text-sm font-medium mb-1.5">Oturum adı</label>
+    <input id="session-title" type="text" maxlength="80" placeholder="Örn. Yapay Zeka Finali"
+      class="w-full mb-4 px-4 py-2.5 rounded-xl border border-outline-variant bg-white text-sm outline-none focus:border-primary"/>
+    <label class="block text-sm font-medium mb-1.5">Kısa not (opsiyonel)</label>
+    <textarea id="session-desc" rows="2" maxlength="280" placeholder="Bu oturumda ne çalışıyorsun?"
+      class="w-full mb-5 px-4 py-2.5 rounded-xl border border-outline-variant bg-white text-sm outline-none focus:border-primary resize-none"></textarea>
+    <div class="flex gap-3 justify-end">
+      <button id="modal-cancel" class="px-4 py-2 rounded-xl text-sm border border-outline-variant">Vazgeç</button>
+      <button id="modal-save" class="primary-btn px-5 py-2 rounded-xl text-sm font-semibold">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-on-background text-white text-sm px-4 py-2 rounded-full shadow-lg hidden z-50"></div>
+
+<script src="/static/js/api.js"></script>
+<script src="/static/js/sessions.js"></script>
+</body>
+</html>

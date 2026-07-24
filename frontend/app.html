@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Çalışma Alanı - Betula</title>
+<link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        "on-error-container": "#410002",
+        "on-primary-container": "#3d1000",
+        "tertiary-container": "#e9dfc0",
+        "surface-container-lowest": "#ffffff",
+        background: "#fff8f6",
+        tertiary: "#685e43",
+        secondary: "#755846",
+        "surface-container-low": "#fcf1ec",
+        "primary-container": "#ffdbcb",
+        "inverse-surface": "#392e27",
+        "on-surface": "#231a14",
+        "error-container": "#ffdad6",
+        "outline-variant": "#d7c2b6",
+        "surface-container": "#f6ebe6",
+        "on-background": "#231a14",
+        primary: "#c2652a",
+        "on-secondary-container": "#2a1609",
+        "secondary-container": "#ffdcc5",
+        "on-primary": "#ffffff",
+        "surface-variant": "#f4ded3",
+        "on-surface-variant": "#52443c",
+        "on-secondary": "#ffffff",
+        "inverse-primary": "#ffb68f",
+        "surface-container-high": "#f1e5e0",
+        outline: "#85736a",
+        surface: "#fff8f6",
+        "on-tertiary-container": "#221b06",
+        error: "#ba1a1a",
+        "surface-dim": "#e7d7d0",
+      },
+      borderRadius: { DEFAULT: "0.5rem", lg: "0.5rem", xl: "0.5rem", full: "9999px" },
+      fontFamily: {
+        "body-md": ["Manrope", "sans-serif"],
+        "label-sm": ["Manrope", "sans-serif"],
+        "headline-lg": ["Manrope", "sans-serif"],
+      },
+      fontSize: {
+        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+        "label-sm": ["12px", { lineHeight: "1.0", letterSpacing: "0.1em", fontWeight: "500" }],
+        "headline-lg": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }],
+      },
+    },
+  },
+};
+</script>
+<style>
+  body { background-color: #fff8f6; color: #231a14; margin: 0; overflow: hidden; }
+  .glass-panel { background-color: #ffffff; border: 1px solid #d7c2b6; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .glass-card { background: #f6ebe6; border: 1px solid #d7c2b6; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #ffffff; }
+  ::-webkit-scrollbar-thumb { background: #d7c2b6; border-radius: 8px; }
+  .prose-note h1,.prose-note h2,.prose-note h3 { font-weight: 600; margin: 0.8em 0 0.4em; color: #231a14; }
+  .prose-note h1 { font-size: 1.4rem; } .prose-note h2 { font-size: 1.2rem; } .prose-note h3 { font-size: 1.05rem; }
+  .prose-note p, .prose-note li { color: #52443c; line-height: 1.65; margin-bottom: 0.5em; }
+  .prose-note ul { list-style: disc; padding-left: 1.25rem; }
+  .prose-note code { background: #ffdbcb; padding: 0.1rem 0.35rem; border-radius: 0.25rem; font-size: 0.85em; }
+  .nav-active { background: #ffdbcb; color: #3d1000; }
+  .panel-hidden { display: none !important; }
+
+  /* Quiz üretimi — Betula yazı + logo döngüsü */
+  .quiz-grow {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 300px; gap: 1.25rem;
+  }
+  .quiz-grow-stage {
+    display: flex; align-items: center; justify-content: center; gap: 0.85rem;
+    min-height: 72px;
+  }
+  .quiz-grow-word {
+    display: flex; align-items: baseline; gap: 0.02em;
+    font-family: "Manrope", "Segoe UI", sans-serif;
+    font-weight: 700;
+    font-size: 42px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: #c2652a;
+  }
+  .quiz-grow-word .ch {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(14px) scale(0.85);
+    filter: blur(4px);
+    animation: betula-char 4.8s ease-out infinite;
+  }
+  .quiz-grow-word .ch:nth-child(1) { animation-delay: 0s; }
+  .quiz-grow-word .ch:nth-child(2) { animation-delay: 0.12s; }
+  .quiz-grow-word .ch:nth-child(3) { animation-delay: 0.24s; }
+  .quiz-grow-word .ch:nth-child(4) { animation-delay: 0.36s; }
+  .quiz-grow-word .ch:nth-child(5) { animation-delay: 0.48s; }
+  .quiz-grow-word .ch:nth-child(6) { animation-delay: 0.6s; }
+
+  .quiz-grow-logo {
+    width: 52px; height: 52px;
+    opacity: 0;
+    transform: scale(0.5) rotate(-8deg);
+    animation: betula-logo-pop 4.8s cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
+  }
+  .quiz-grow-logo img {
+    width: 100%; height: 100%; object-fit: contain;
+    display: block;
+  }
+
+  .quiz-grow-label {
+    font-size: 14px; color: #52443c; letter-spacing: 0.02em;
+    animation: quiz-pulse 1.6s ease-in-out infinite;
+  }
+  .quiz-grow-dots span {
+    opacity: 0;
+    animation: quiz-dot 1.4s infinite;
+  }
+  .quiz-grow-dots span:nth-child(1) { animation-delay: 0s; }
+  .quiz-grow-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .quiz-grow-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* 0–35% harfler sırayla · 40–78% logo + yazı durur · 85–100% silinir, baştan */
+  @keyframes betula-char {
+    0%   { opacity: 0; transform: translateY(14px) scale(0.85); filter: blur(4px); }
+    12%  { opacity: 1; transform: translateY(0) scale(1.06); filter: blur(0); }
+    16%  { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    78%  { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    90%  { opacity: 0; transform: translateY(-8px) scale(0.92); filter: blur(3px); }
+    100% { opacity: 0; transform: translateY(14px) scale(0.85); filter: blur(4px); }
+  }
+  @keyframes betula-logo-pop {
+    0%, 34% { opacity: 0; transform: scale(0.5) rotate(-8deg); }
+    42%     { opacity: 1; transform: scale(1.12) rotate(2deg); }
+    48%     { opacity: 1; transform: scale(1) rotate(0deg); }
+    78%     { opacity: 1; transform: scale(1) rotate(0deg); }
+    90%     { opacity: 0; transform: scale(0.7) rotate(6deg); }
+    100%    { opacity: 0; transform: scale(0.5) rotate(-8deg); }
+  }
+  @keyframes quiz-pulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+  @keyframes quiz-dot {
+    0%, 20% { opacity: 0; }
+    40%, 100% { opacity: 1; }
+  }
+
+  /* Kaynak derleme — bulanık katman */
+  .compile-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 248, 246, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: opacity 0.35s ease;
+  }
+  .compile-overlay.hidden { display: none; }
+  .compile-overlay-card {
+    text-align: center;
+    padding: 1.75rem 2rem;
+    max-width: 380px;
+  }
+  .compile-overlay-title {
+    font-family: "Manrope", sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: #221a16;
+    margin: 0 0 0.35rem;
+    min-height: 1.4em;
+    animation: compile-msg-in 0.4s ease;
+  }
+  .compile-overlay-sub {
+    font-size: 13px;
+    color: #52443c;
+    margin: 0 0 1rem;
+    opacity: 0.85;
+  }
+  .compile-tips {
+    text-align: left;
+    min-height: 5.4em;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(215, 194, 185, 0.7);
+  }
+  .compile-tips-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c2652a;
+    margin-bottom: 0.45rem;
+  }
+  .compile-tips-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #52443c;
+    animation: compile-tip-in 0.45s ease;
+  }
+  .compile-overlay-bar {
+    margin: 1rem auto 0;
+    width: 160px;
+    height: 3px;
+    border-radius: 999px;
+    background: #f4ded5;
+    overflow: hidden;
+  }
+  .compile-overlay-bar > span {
+    display: block;
+    height: 100%;
+    width: 40%;
+    border-radius: 999px;
+    background: #c2652a;
+    animation: compile-bar 1.2s ease-in-out infinite;
+  }
+  @keyframes compile-bar {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(320%); }
+  }
+  @keyframes compile-msg-in {
+    from { opacity: 0; transform: translateY(6px); filter: blur(4px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+  @keyframes compile-tip-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body class="h-screen w-screen flex font-body-md text-body-md text-on-background bg-background">
+<input type="file" id="file-input" accept=".pdf,.docx,.doc" class="hidden"/>
+
+<nav class="fixed left-0 top-0 h-full w-64 z-40 bg-surface-container-lowest border-r border-outline-variant flex flex-col py-8 gap-4 hidden md:flex shadow-sm">
+  <div class="px-6 mb-4 flex items-center gap-3">
+    <a href="/oturumlar" class="w-10 h-10 rounded-lg overflow-hidden border border-outline-variant shrink-0">
+      <img src="/static/assets/betula-logo.png" alt="Betula" class="w-full h-full object-cover"/>
+    </a>
+    <div>
+      <h1 class="text-[18px] font-semibold text-on-background tracking-tighter">Betula</h1>
+      <span id="session-label" class="font-label-sm text-label-sm text-on-surface-variant uppercase">Oturum</span>
+    </div>
+  </div>
+  <div class="px-6 mb-2">
+    <button id="btn-new-upload" class="w-full py-2 px-4 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-sm">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+      Yeni Kaynak
+    </button>
+  </div>
+  <ul class="flex-1 flex flex-col gap-1 px-4">
+    <li><button data-view="sources" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
+      <span class="material-symbols-outlined group-hover:text-primary">description</span>
+      <span class="font-label-sm text-label-sm">Kaynaklar</span>
+    </button></li>
+    <li><button data-view="notes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg nav-active mx-0 font-medium text-left">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+      <span class="font-label-sm text-label-sm">Notlar</span>
+    </button></li>
+    <li><button data-view="flashcards" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
+      <span class="material-symbols-outlined group-hover:text-primary">style</span>
+      <span class="font-label-sm text-label-sm">Flashcards</span>
+    </button></li>
+    <li><button data-view="quiz" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
+      <span class="material-symbols-outlined group-hover:text-primary">quiz</span>
+      <span class="font-label-sm text-label-sm">Quiz</span>
+    </button></li>
+    <li><button data-view="history" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
+      <span class="material-symbols-outlined group-hover:text-primary">history</span>
+      <span class="font-label-sm text-label-sm">Sohbet Geçmişi</span>
+    </button></li>
+    <li class="mt-auto">
+      <a href="/oturumlar" class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group">
+        <span class="material-symbols-outlined group-hover:text-primary">swap_horiz</span>
+        <span class="font-label-sm text-label-sm">Oturumlar</span>
+      </a>
+    </li>
+    <li>
+      <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group">
+        <span class="material-symbols-outlined group-hover:text-primary">home</span>
+        <span class="font-label-sm text-label-sm">Ana Sayfa</span>
+      </a>
+    </li>
+    <li>
+      <button id="btn-logout" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
+        <span class="material-symbols-outlined group-hover:text-primary">logout</span>
+        <span class="font-label-sm text-label-sm">Çıkış</span>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<main class="flex-1 ml-0 md:ml-64 h-full p-4 md:p-6 flex gap-6 overflow-hidden bg-background">
+  <!-- Left: Sources & History -->
+  <div class="w-72 hidden lg:flex flex-col gap-6 h-full">
+    <div class="glass-panel rounded-lg flex-1 flex flex-col overflow-hidden">
+      <div class="p-4 border-b border-outline-variant flex items-center justify-between">
+        <h2 class="font-label-sm text-label-sm text-primary uppercase tracking-widest flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">folder_open</span> Kaynaklar
+        </h2>
+        <button id="btn-add-source" class="text-on-surface-variant hover:text-primary transition-colors" title="Yükle">
+          <span class="material-symbols-outlined text-[18px]">add_circle</span>
+        </button>
+      </div>
+      <div id="sources-list" class="p-4 flex-1 overflow-y-auto flex flex-col gap-3">
+        <p class="text-sm text-on-surface-variant">Henüz kaynak yok. PDF/DOCX yükle.</p>
+      </div>
+    </div>
+    <div class="glass-panel rounded-lg h-1/3 flex flex-col overflow-hidden">
+      <div class="p-4 border-b border-outline-variant">
+        <h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">history</span> Geçmiş
+        </h2>
+      </div>
+      <div id="history-list" class="p-4 flex-1 overflow-y-auto flex flex-col gap-3">
+        <p class="text-sm text-on-surface-variant">Sohbet yok.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center -->
+  <div class="flex-1 flex flex-col h-full gap-4 relative min-w-0">
+    <!-- Notes / Document viewer -->
+    <div id="panel-notes" class="glass-panel rounded-lg flex-1 flex flex-col overflow-hidden relative shadow-sm">
+      <div class="h-12 border-b border-outline-variant flex items-center justify-between px-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="material-symbols-outlined text-error text-[18px]">picture_as_pdf</span>
+          <span id="doc-title" class="font-label-sm text-label-sm font-semibold tracking-wider text-on-surface truncate">Kaynak seçilmedi</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="job-status" class="text-[11px] px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant hidden"></span>
+          <button id="btn-compile" class="text-xs uppercase tracking-wider px-3 py-1 rounded-full border border-primary text-primary hover:bg-primary-container disabled:opacity-40" disabled>Derle</button>
+        </div>
+      </div>
+      <div id="note-content" class="flex-1 bg-surface-container-low p-6 md:p-8 overflow-y-auto">
+        <div class="max-w-3xl mx-auto bg-surface-container-lowest border border-outline-variant rounded-lg p-8 shadow-md prose-note">
+          <h2 class="font-headline-lg text-[24px] mb-4 text-on-surface">Hoş geldin</h2>
+          <p class="text-on-surface-variant">Soldan bir kaynak seç veya yeni PDF/DOCX yükle. Pipeline tamamlanınca Master Sentez burada görünür.</p>
+        </div>
+      </div>
+      <div id="compile-overlay" class="compile-overlay hidden" aria-live="polite" aria-busy="true">
+        <div class="compile-overlay-card">
+          <p id="compile-overlay-title" class="compile-overlay-title">Doküman hazırlanıyor…</p>
+          <p class="compile-overlay-sub">Bu işlem biraz sürebilir</p>
+          <div class="compile-tips">
+            <span class="compile-tips-label">Biliyor muydun?</span>
+            <p id="compile-tip" class="compile-tips-text"></p>
+          </div>
+          <div class="compile-overlay-bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flashcards panel -->
+    <div id="panel-flashcards" class="glass-panel rounded-lg flex-1 flex flex-col overflow-hidden panel-hidden">
+      <div class="p-4 border-b border-outline-variant flex items-center justify-between">
+        <h2 class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Flashcards</h2>
+        <button id="btn-gen-cards" class="text-xs uppercase tracking-wider px-3 py-1 rounded-full bg-primary text-on-primary">Üret</button>
+      </div>
+      <div id="flashcard-area" class="flex-1 p-6 overflow-y-auto flex flex-col items-center justify-center gap-4">
+        <p class="text-on-surface-variant text-sm">Tekrar edilecek kart yok. Önce not derle, sonra üret.</p>
+      </div>
+    </div>
+
+    <!-- Quiz panel -->
+    <div id="panel-quiz" class="glass-panel rounded-lg flex-1 flex flex-col overflow-hidden panel-hidden">
+      <div class="p-4 border-b border-outline-variant flex items-center justify-between">
+        <h2 class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Quiz</h2>
+        <div class="flex items-center gap-2">
+          <button id="btn-quiz-archive" class="text-xs uppercase tracking-wider px-3 py-1 rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors">Arşiv</button>
+          <button id="btn-quiz-new" class="text-xs uppercase tracking-wider px-3 py-1 rounded-full bg-primary text-on-primary">Yeni Quiz</button>
+        </div>
+      </div>
+      <div id="quiz-area" class="flex-1 p-6 overflow-y-auto">
+        <p class="text-on-surface-variant text-sm">Quiz henüz hazır değil.</p>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="glass-panel rounded-lg h-[38%] min-h-[220px] flex flex-col relative overflow-hidden shadow-sm">
+      <div class="p-3 border-b border-outline-variant flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[16px]">robot_2</span>
+        <span class="font-label-sm text-label-sm text-primary uppercase tracking-widest font-semibold">Core AI Chat</span>
+        <span class="ml-auto px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container text-[10px] font-mono border border-outline-variant flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Groq
+        </span>
+      </div>
+      <div id="chat-messages" class="flex-1 p-4 overflow-y-auto flex flex-col gap-4"></div>
+      <div class="p-3 border-t border-outline-variant">
+        <form id="chat-form" class="relative flex items-center bg-surface-container rounded-lg border border-outline-variant focus-within:border-primary transition-all px-3 py-2">
+          <span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-2">temp_preferences_custom</span>
+          <input id="chat-input" class="flex-1 bg-transparent border-none focus:ring-0 text-[14px] text-on-surface placeholder:text-on-surface-variant outline-none" placeholder="Kaynaklar hakkında sor..." type="text" autocomplete="off"/>
+          <button type="submit" class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center hover:opacity-90 shadow-sm">
+            <span class="material-symbols-outlined text-[16px]">send</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Master Sentez & Tools -->
+  <div class="w-80 hidden xl:flex flex-col gap-6 h-full">
+    <div class="glass-panel rounded-lg flex-1 flex flex-col overflow-hidden">
+      <div class="p-4 border-b border-outline-variant flex items-center justify-between">
+        <h2 class="font-label-sm text-label-sm text-primary uppercase tracking-widest flex items-center gap-2 font-semibold">
+          <span class="material-symbols-outlined text-[16px]">auto_awesome</span> Master Sentez
+        </h2>
+        <a id="btn-download-note" href="#" class="text-on-surface-variant hover:text-primary hidden" title="İndir">
+          <span class="material-symbols-outlined text-[18px]">download</span>
+        </a>
+      </div>
+      <div id="synthesis-list" class="p-4 flex-1 overflow-y-auto">
+        <div class="text-[12px] text-on-surface-variant uppercase tracking-wider mb-3 pb-1 border-b border-outline-variant font-medium">Eksikler / Gaps</div>
+        <ul id="gap-list" class="space-y-3">
+          <li class="text-sm text-on-surface-variant">Henüz gap yok.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="glass-panel rounded-lg h-2/5 flex flex-col overflow-hidden">
+      <div class="p-4 border-b border-outline-variant">
+        <h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest flex items-center gap-2 font-semibold">
+          <span class="material-symbols-outlined text-[16px]">build</span> Çalışma Araçları
+        </h2>
+      </div>
+      <div class="p-4 flex-1 grid grid-cols-2 gap-3">
+        <button data-view="flashcards" class="tool-btn bg-surface-container border border-outline-variant rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary transition-all p-4">
+          <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+            <span class="material-symbols-outlined text-[20px]">style</span>
+          </div>
+          <span class="text-[12px] font-semibold text-on-surface">Flashcards</span>
+          <span id="fc-count" class="text-[10px] text-on-surface-variant bg-surface-container-lowest px-1.5 py-0.5 rounded border border-outline-variant">0</span>
+        </button>
+        <button data-view="quiz" class="tool-btn bg-surface-container border border-outline-variant rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary transition-all p-4">
+          <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+            <span class="material-symbols-outlined text-[20px]">quiz</span>
+          </div>
+          <span class="text-[12px] font-semibold text-on-surface">Quiz</span>
+          <span class="text-[10px] text-on-surface-variant bg-surface-container-lowest px-1.5 py-0.5 rounded border border-outline-variant">Başlat</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden px-4 py-3 rounded-lg bg-on-surface text-surface text-sm shadow-lg max-w-sm"></div>
+
+<script src="/static/js/api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -12,40 +12,33 @@ from .db import get_db, require_user_id, execute_query
 # ============== CONVERSATION FONKSIYONLARI ==============
 
 @require_user_id
-def create_conversation(*, user_id: int, title: str = "Yeni Sohbet", model_name: str = "qwen2.5:7b") -> int:
-    """Yeni sohbet oturumu olusturur.
-    
-    Args:
-        user_id: Kullanici ID (zorunlu keyword arg)
-        title: Sohbet basligi
-        model_name: Kullanilan model
-        
-    Returns:
-        Yeni conversation_id
-    """
+def create_conversation(*, user_id: int, title: str = "Yeni Sohbet", model_name: str = "qwen2.5:7b", session_id: int = None) -> int:
+    """Yeni sohbet oturumu olusturur."""
     with get_db() as conn:
         cursor = conn.execute(
-            """INSERT INTO conversations (user_id, title, model_name) 
-               VALUES (?, ?, ?)""",
-            (user_id, title, model_name)
+            """INSERT INTO conversations (user_id, session_id, title, model_name) 
+               VALUES (?, ?, ?, ?)""",
+            (user_id, session_id, title, model_name)
         )
         conn.commit()
         return cursor.lastrowid
 
 
 @require_user_id
-def list_conversations(*, user_id: int, limit: int = 50) -> list:
-    """Kullanicinin tum sohbetlerini listeler.
-    
-    Args:
-        user_id: Kullanici ID (zorunlu keyword arg)
-        limit: Maksimum kayit sayisi
-        
-    Returns:
-        Conversation listesi (dict)
-    """
+def list_conversations(*, user_id: int, session_id: int = None, limit: int = 50) -> list:
+    """Kullanicinin sohbetlerini listeler."""
+    if session_id:
+        return execute_query(
+            """SELECT id, title, model_name, created_at, updated_at, session_id
+               FROM conversations 
+               WHERE user_id = ? AND session_id = ?
+               ORDER BY updated_at DESC 
+               LIMIT ?""",
+            (user_id, session_id, limit),
+            fetch='all'
+        )
     return execute_query(
-        """SELECT id, title, model_name, created_at, updated_at 
+        """SELECT id, title, model_name, created_at, updated_at, session_id
            FROM conversations 
            WHERE user_id = ? 
            ORDER BY updated_at DESC 
@@ -69,7 +62,7 @@ def get_conversation(conversation_id: int, *, user_id: int) -> Optional[dict]:
         Conversation dict veya None
     """
     return execute_query(
-        """SELECT id, title, model_name, created_at, updated_at 
+        """SELECT id, title, model_name, created_at, updated_at, session_id 
            FROM conversations 
            WHERE id = ? AND user_id = ?""",
         (conversation_id, user_id),

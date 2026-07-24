@@ -10,7 +10,15 @@ from functools import wraps
 from typing import Any, Callable, Optional
 from datetime import datetime
 
-DB_NAME = "LocalInsights.db"
+def get_db_name() -> str:
+    try:
+        from backend.config import get_settings
+        return get_settings().database_path
+    except Exception:
+        return "LocalInsights.db"
+
+
+DB_NAME = "LocalInsights.db"  # fallback; prefer get_db_name()
 
 
 @contextmanager
@@ -22,7 +30,7 @@ def get_db():
             cursor = conn.execute("SELECT * FROM users")
             results = cursor.fetchall()
     """
-    conn = sqlite3.connect(DB_NAME, check_same_thread=False)
+    conn = sqlite3.connect(get_db_name(), check_same_thread=False)
     conn.row_factory = sqlite3.Row  # Dict-like access
     conn.execute("PRAGMA foreign_keys = ON")  # FK constraints aktif
     try:
@@ -135,15 +143,21 @@ def init_db():
         ''')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)')
         
-        # Default admin user oluştur (migration için)
-        cursor = conn.execute("SELECT id FROM users WHERE id = 1")
-        if not cursor.fetchone():
-            import bcrypt
-            default_hash = bcrypt.hashpw(b"admin123", bcrypt.gensalt()).decode('utf-8')
-            conn.execute(
-                "INSERT OR IGNORE INTO users (id, email, password_hash, name) VALUES (1, 'admin@local', ?, 'Admin')",
-                (default_hash,)
-            )
+        # Optional default admin (only when SEED_DEFAULT_ADMIN=true)
+        try:
+            from backend.config import get_settings
+            seed_admin = get_settings().seed_default_admin
+        except Exception:
+            seed_admin = False
+        if seed_admin:
+            cursor = conn.execute("SELECT id FROM users WHERE id = 1")
+            if not cursor.fetchone():
+                import bcrypt
+                default_hash = bcrypt.hashpw(b"admin123", bcrypt.gensalt()).decode('utf-8')
+                conn.execute(
+                    "INSERT OR IGNORE INTO users (id, email, password_hash, name) VALUES (1, 'admin@local', ?, 'Admin')",
+                    (default_hash,)
+                )
         
         # Mevcut tabloları migrate et (user_id kolonu ekle)
         _migrate_existing_tables(conn)
@@ -355,8 +369,172 @@ def init_db():
             )
         ''')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_memory_events_user ON memory_events(user_id)')
-        
+
+        # COMPILED_NOTES — LangGraph research pipeline output
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS compiled_notes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                document_id INTEGER NOT NULL,
+                markdown TEXT,
+                gap_list_json TEXT,
+                sources_json TEXT,
+                status TEXT DEFAULT 'draft',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+            )
+        ''')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_compiled_notes_user ON compiled_notes(user_id)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_compiled_notes_doc ON compiled_notes(document_id)')
+
+        # PIPELINE_JOBS — async compile job status
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS pipeline_jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                document_id INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'queued',
+                current_step TEXT,
+                error TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+            )
+        ''')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_pipeline_jobs_user ON pipeline_jobs(user_id)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_pipeline_jobs_doc ON pipeline_jobs(document_id)')
+
+        # QUIZ_ATTEMPTS — cozulmus quiz arsivi (ozet)
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS quiz_attempts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                document_id INTEGER,
+                topic TEXT,
+                total_questions INTEGER NOT NULL DEFAULT 0,
+                correct_count INTEGER NOT NULL DEFAULT 0,
+                score_pct REAL NOT NULL DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE SET NULL
+            )
+        ''')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user ON quiz_attempts(user_id)')
+
+        # QUIZ_ATTEMPT_ITEMS — arsivdeki her sorunun detayi
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS quiz_attempt_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                attempt_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                question_id INTEGER,
+                question_type TEXT,
+                question_text TEXT,
+                options TEXT,
+                given_answer TEXT,
+                correct_answer TEXT,
+                is_correct INTEGER DEFAULT 0,
+                explanation TEXT,
+                FOREIGN KEY (attempt_id) REFERENCES quiz_attempts(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ''')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_quiz_attempt_items_attempt ON quiz_attempt_items(attempt_id)')
+
+        # STUDY_SESSIONS — calisma oturumlari
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS study_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                title TEXT NOT NULL DEFAULT 'Yeni Çalışma',
+                description TEXT DEFAULT '',
+                is_active INTEGER DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ''')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_study_sessions_user ON study_sessions(user_id)')
+
+        _ensure_session_columns(conn)
+        _backfill_default_sessions(conn)
+
         conn.commit()
+
+
+def _ensure_session_columns(conn):
+    """Mevcut tablolara session_id kolonu ekler."""
+    tables = [
+        "documents",
+        "conversations",
+        "summaries",
+        "flashcards",
+        "quiz_questions",
+        "compiled_notes",
+        "pipeline_jobs",
+        "quiz_attempts",
+        "learning_history",
+    ]
+    for table in tables:
+        try:
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table,)
+            )
+            if not cursor.fetchone():
+                continue
+            cols = [c[1] for c in conn.execute(f"PRAGMA table_info({table})").fetchall()]
+            if "session_id" not in cols:
+                print(f"Migrating {table}: adding session_id…")
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN session_id INTEGER")
+            conn.execute(
+                f"CREATE INDEX IF NOT EXISTS idx_{table}_session ON {table}(session_id)"
+            )
+        except Exception as e:
+            print(f"session_id migration warning for {table}: {e}")
+
+
+def _backfill_default_sessions(conn):
+    """session_id'siz kayitlari kullanici basina varsayilan oturuma baglar."""
+    try:
+        users = conn.execute("SELECT id FROM users").fetchall()
+        for (uid,) in users:
+            row = conn.execute(
+                "SELECT id FROM study_sessions WHERE user_id = ? AND is_active = 1 ORDER BY id ASC LIMIT 1",
+                (uid,),
+            ).fetchone()
+            if row:
+                sid = row[0]
+            else:
+                cur = conn.execute(
+                    "INSERT INTO study_sessions (user_id, title, description) VALUES (?, ?, ?)",
+                    (uid, "Genel Çalışma", "Otomatik oluşturulmuş varsayılan oturum"),
+                )
+                sid = cur.lastrowid
+
+            for table in (
+                "documents",
+                "conversations",
+                "summaries",
+                "flashcards",
+                "quiz_questions",
+                "compiled_notes",
+                "pipeline_jobs",
+                "quiz_attempts",
+                "learning_history",
+            ):
+                try:
+                    cols = [c[1] for c in conn.execute(f"PRAGMA table_info({table})").fetchall()]
+                    if "session_id" in cols and "user_id" in cols:
+                        conn.execute(
+                            f"UPDATE {table} SET session_id = ? WHERE user_id = ? AND session_id IS NULL",
+                            (sid, uid),
+                        )
+                except Exception:
+                    pass
+    except Exception as e:
+        print(f"session backfill warning: {e}")
 
 
 def migrate_existing_data(default_user_id: int = 1):

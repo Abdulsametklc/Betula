@@ -8,7 +8,8 @@ Güvenlik: Hassas veri filtreleme, user izolasyonu garantili.
 import json
 import re
 from typing import Dict, List, Any, Optional
-from langchain_ollama import ChatOllama
+
+from backend.llm import get_chat_model
 
 
 # ============== HASSAS VERİ PATTERN'LERİ ==============
@@ -94,9 +95,13 @@ def extract_memory(model_name: str, user_message: str, chat_history: list = None
         Parsed memory JSON
     """
     try:
-        llm = ChatOllama(model=model_name, temperature=0.1)
+        llm = get_chat_model(
+            temperature=0.1,
+            model_name=model_name if model_name else None,
+            fast=True,
+        )
         prompt = MEMORY_EXTRACTION_PROMPT.format(message=user_message)
-        
+
         response = llm.invoke(prompt)
         return _parse_memory_json(response.content)
     except Exception as e:

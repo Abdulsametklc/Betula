@@ -1,0 +1,1 @@
+"""LocalInsights FastAPI backend."""

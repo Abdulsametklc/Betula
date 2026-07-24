@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Betula - Geleceğin Öğrenme Deneyimi</title>
+<link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: "#c2652a",
+        "on-primary": "#ffffff",
+        "primary-container": "#ffdbcc",
+        "on-primary-container": "#3b0a00",
+        secondary: "#765749",
+        "on-secondary": "#ffffff",
+        "secondary-container": "#ffdacf",
+        "on-secondary-container": "#2c150b",
+        tertiary: "#646032",
+        "on-tertiary": "#ffffff",
+        "tertiary-container": "#eae4a9",
+        "on-tertiary-container": "#1f1c00",
+        error: "#ba1a1a",
+        "on-error": "#ffffff",
+        "error-container": "#ffdad6",
+        "on-error-container": "#410002",
+        background: "#fff8f6",
+        "on-background": "#221a16",
+        surface: "#fff8f6",
+        "on-surface": "#221a16",
+        "surface-variant": "#f4ded5",
+        "on-surface-variant": "#52443d",
+        outline: "#85736c",
+        "outline-variant": "#d7c2b9",
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#fff0ea",
+        "surface-container": "#fceae3",
+        "surface-container-high": "#f6e4dd",
+        "surface-container-highest": "#f0ded7",
+      },
+      borderRadius: { DEFAULT: "0.5rem", lg: "0.5rem", xl: "0.5rem", full: "9999px" },
+      spacing: {
+        "margin-desktop": "64px",
+        gutter: "24px",
+        "margin-mobile": "16px",
+        unit: "4px",
+        "container-max": "1440px",
+      },
+      fontFamily: {
+        "body-md": ["Manrope", "sans-serif"],
+        "label-sm": ["Manrope", "sans-serif"],
+        "display-lg": ["Manrope", "sans-serif"],
+        "headline-lg-mobile": ["Manrope", "sans-serif"],
+        "headline-lg": ["Manrope", "sans-serif"],
+      },
+      fontSize: {
+        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+        "label-sm": ["12px", { lineHeight: "1.0", letterSpacing: "0.1em", fontWeight: "500" }],
+        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "headline-lg-mobile": ["24px", { lineHeight: "1.2", fontWeight: "600" }],
+        "headline-lg": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }],
+      },
+    },
+  },
+};
+</script>
+<style>
+  body { background-color: #fff8f6; color: #221a16; overflow-x: hidden; }
+  .glass-card {
+    background: #ffffff;
+    border: 1px solid #f4ded5;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  }
+  .glass-card:hover {
+    border-color: #c2652a;
+    box-shadow: 0 10px 15px -3px rgba(194,101,42,0.1);
+    transform: translateY(-5px);
+  }
+  .primary-btn { background-color: #c2652a; color: #ffffff; transition: all 0.3s ease; }
+  .primary-btn:hover { background-color: #b0571f; box-shadow: 0 4px 14px rgba(194,101,42,0.3); }
+  .fade-in-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.8s ease forwards; }
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+  .modal-backdrop { background: rgba(34,26,22,0.45); backdrop-filter: blur(6px); }
+</style>
+</head>
+<body class="antialiased selection:bg-primary-container selection:text-on-primary-container">
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20">
+  <div class="flex items-center gap-8">
+    <a class="flex items-center gap-3 font-display-lg text-[28px] md:text-display-lg tracking-tighter text-primary" href="/">
+      <img src="/static/assets/betula-logo.png" alt="Betula" class="w-10 h-10 rounded-lg object-cover shadow-sm"/>
+      Betula
+    </a>
+    <div class="hidden md:flex gap-6 font-body-md text-body-md">
+      <a class="text-on-surface-variant hover:text-primary transition-colors py-2" href="#features">Özellikler</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors py-2" href="/oturumlar" data-nav-app>Çalışma Alanı</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors py-2" href="/oturumlar" data-nav-app>Oturumlar</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button id="btn-auth" class="hidden md:flex items-center justify-center h-10 px-6 rounded-full font-label-sm text-label-sm primary-btn active:scale-95 transition-transform uppercase tracking-wider">
+      Başla
+    </button>
+    <div id="user-chip" class="hidden items-center gap-2">
+      <span id="user-name" class="text-sm text-on-surface-variant hidden sm:inline"></span>
+      <button id="btn-logout" class="text-xs uppercase tracking-wider text-on-surface-variant hover:text-primary">Çıkış</button>
+      <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-semibold" id="user-avatar">L</div>
+    </div>
+  </div>
+</nav>
+
+<section class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-surface">
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-surface-container-low via-background to-background z-0 pointer-events-none"></div>
+  <div class="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center gap-8 mt-16">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm fade-in-up uppercase">
+      <span class="material-symbols-outlined text-[16px]">rocket_launch</span>
+      Yerel + Bulut Destekli Çalışma Asistanı
+    </div>
+    <h1 class="font-display-lg text-display-lg text-on-surface fade-in-up delay-100 md:text-[72px] leading-[1.1]">
+      Geleceğin Öğrenme <br/><span class="text-primary">Deneyimi</span>
+    </h1>
+    <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl fade-in-up delay-200">
+      PDF ve notlarını yükle; eksikleri araştırıp derlenmiş çalışma notuna dönüştürelim.
+      Sonra sohbet et, flashcard ve quiz ile pekiştir.
+    </p>
+    <div class="flex flex-wrap items-center justify-center gap-4 fade-in-up delay-300">
+      <button id="btn-kesfet" class="px-10 py-4 rounded-full font-label-sm text-label-sm primary-btn flex items-center gap-2 uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+        Keşfet
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+      </button>
+      <a href="#features" class="px-8 py-4 rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary font-label-sm text-label-sm uppercase tracking-widest transition-colors">
+        Özellikler
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="relative z-10 py-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="features">
+  <div class="text-center mb-16 fade-in-up">
+    <h2 class="font-headline-lg text-headline-lg text-primary">Bilişsel Modüller</h2>
+    <p class="font-body-md text-body-md text-on-surface-variant mt-4">Hızlı öğrenme ve kalıcı hatırlama için araçlar.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[minmax(300px,auto)]">
+    <div class="glass-card rounded-2xl p-8 md:col-span-2 relative overflow-hidden group fade-in-up delay-100">
+      <div class="relative z-10 flex flex-col h-full justify-between">
+        <div>
+          <span class="material-symbols-outlined text-4xl text-primary mb-4" style="font-variation-settings: 'FILL' 1;">hub</span>
+          <h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Akıllı RAG Motoru</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+            Dokümanlarını vektör belleğe alır; sorularına kendi kaynaklarından yanıt verir.
+          </p>
+        </div>
+        <div class="mt-8 flex gap-2">
+          <span class="px-3 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">Groq</span>
+          <span class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm">FAISS</span>
+        </div>
+      </div>
+      <div class="absolute right-0 bottom-0 w-64 h-64 bg-gradient-to-tl from-primary-container/40 to-transparent rounded-tl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+    </div>
+    <div class="glass-card rounded-2xl p-8 relative overflow-hidden group fade-in-up delay-200">
+      <div class="relative z-10">
+        <span class="material-symbols-outlined text-4xl text-secondary mb-4" style="font-variation-settings: 'FILL' 1;">style</span>
+        <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Dinamik Flashcard</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant">
+          Derlenmiş notlardan otomatik kart üretimi ve aralıklı tekrar.
+        </p>
+      </div>
+    </div>
+    <div class="glass-card rounded-2xl p-8 relative overflow-hidden group fade-in-up delay-300">
+      <div class="relative z-10">
+        <span class="material-symbols-outlined text-4xl text-tertiary mb-4" style="font-variation-settings: 'FILL' 1;">memory</span>
+        <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Kişisel Hafıza</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant">
+          Tercihlerini ve zorlandığın konuları oturumlar arasında hatırlar.
+        </p>
+      </div>
+    </div>
+    <div class="glass-card rounded-2xl overflow-hidden md:col-span-2 relative group fade-in-up delay-300 min-h-[300px] border-none shadow-none">
+      <img alt="Öğrenme arazisi" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" src="https://lh3.googleusercontent.com/aida/AP1WRLspFN6s3N8fHMPUCQdK75_2I5SvN5qPTRF38z9zTCSMlWp11DLVjMwHQPY4QESD0JTdLZ8CCIl_90pECGp5rTCcjik8TAo_sq2tiP30ZLXsvcd3FgkfeSg54Gde6uzMFNO-Ir_x4CiiN-yCcqozGMwyRmZiwfabDXW9H2pLCJCJD5KUVdPAqmUmR-7N97g0mcpmp74bJi5fPUVcDY1IC5JaItR3DyeCoywoO8GoVHWAvOSUkZMwCr4Thvk"/>
+      <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/80 to-transparent"></div>
+      <div class="relative z-10 p-8 h-full flex flex-col justify-center max-w-lg">
+        <h3 class="font-headline-lg text-headline-lg text-primary mb-4">Araştırma Boru Hattı</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant mb-6">
+          Parse → eksik analizi → web araştırması → master sentez. Tek tıkla kusursuz çalışma notu.
+        </p>
+        <button id="btn-begin" class="self-start px-6 py-2 border border-primary text-primary hover:bg-primary-container hover:text-on-primary-container rounded-full font-label-sm text-label-sm uppercase tracking-wider transition-colors">
+          Çalışmaya Başla
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="w-full py-12 bg-background border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop mt-24 gap-4">
+  <div class="font-body-md text-body-md font-bold text-primary">© 2026 Betula</div>
+  <div class="flex gap-6 font-label-sm text-label-sm">
+    <a class="text-on-surface-variant hover:text-primary" href="/health" target="_blank">API Status</a>
+    <a class="text-on-surface-variant hover:text-primary" href="/docs" target="_blank">API Docs</a>
+  </div>
+</footer>
+
+<!-- Auth Modal -->
+<div id="auth-modal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-backdrop p-4">
+  <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-xl w-full max-w-md p-8 relative">
+    <button id="auth-close" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <h2 id="auth-title" class="font-headline-lg text-headline-lg-mobile text-on-surface mb-2">Giriş Yap</h2>
+    <p class="text-sm text-on-surface-variant mb-6">Hesabınla çalışma alanına geç.</p>
+    <form id="auth-form" class="flex flex-col gap-4">
+      <div id="name-field" class="hidden">
+        <label class="block text-xs uppercase tracking-wider text-on-surface-variant mb-1">Ad</label>
+        <input id="auth-name" type="text" class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary" placeholder="Adın"/>
+      </div>
+      <div>
+        <label class="block text-xs uppercase tracking-wider text-on-surface-variant mb-1">E-posta</label>
+        <input id="auth-email" type="email" required class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary" placeholder="ornek@mail.com"/>
+      </div>
+      <div>
+        <label class="block text-xs uppercase tracking-wider text-on-surface-variant mb-1">Şifre</label>
+        <input id="auth-password" type="password" required minlength="6" class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary" placeholder="En az 6 karakter"/>
+      </div>
+      <p id="auth-error" class="text-sm text-error hidden"></p>
+      <button type="submit" id="auth-submit" class="w-full py-3 rounded-full primary-btn font-label-sm text-label-sm uppercase tracking-wider">Giriş Yap</button>
+    </form>
+    <p class="mt-4 text-sm text-center text-on-surface-variant">
+      <button type="button" id="auth-toggle" class="text-primary hover:underline">Hesabın yok mu? Kayıt ol</button>
+    </p>
+  </div>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script>
+  let mode = "login"; // login | register
+
+  function openAuth(preferred = "login") {
+    mode = preferred;
+    syncAuthUI();
+    const modal = document.getElementById("auth-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  function closeAuth() {
+    const modal = document.getElementById("auth-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.getElementById("auth-error").classList.add("hidden");
+  }
+
+  function syncAuthUI() {
+    const isReg = mode === "register";
+    document.getElementById("auth-title").textContent = isReg ? "Kayıt Ol" : "Giriş Yap";
+    document.getElementById("name-field").classList.toggle("hidden", !isReg);
+    document.getElementById("auth-submit").textContent = isReg ? "Kayıt Ol" : "Giriş Yap";
+    document.getElementById("auth-toggle").textContent = isReg
+      ? "Zaten hesabın var mı? Giriş yap"
+      : "Hesabın yok mu? Kayıt ol";
+  }
+
+  function goApp() {
+    if (Auth.isLoggedIn()) {
+      window.location.href = "/oturumlar";
+    } else {
+      openAuth("login");
+    }
+  }
+
+  function refreshUserUI() {
+    const logged = Auth.isLoggedIn();
+    document.getElementById("btn-auth").classList.toggle("hidden", logged);
+    document.getElementById("btn-auth").classList.toggle("md:flex", !logged);
+    const chip = document.getElementById("user-chip");
+    chip.classList.toggle("hidden", !logged);
+    chip.classList.toggle("flex", logged);
+    if (logged && Auth.user) {
+      document.getElementById("user-name").textContent = Auth.user.name || Auth.user.email;
+      document.getElementById("user-avatar").textContent = (Auth.user.name || Auth.user.email || "U")[0].toUpperCase();
+    }
+  }
+
+  document.getElementById("btn-auth").addEventListener("click", () => openAuth("login"));
+  document.getElementById("btn-kesfet").addEventListener("click", goApp);
+  document.getElementById("btn-begin").addEventListener("click", goApp);
+  document.getElementById("auth-close").addEventListener("click", closeAuth);
+  document.getElementById("auth-modal").addEventListener("click", (e) => {
+    if (e.target.id === "auth-modal") closeAuth();
+  });
+  document.getElementById("auth-toggle").addEventListener("click", () => {
+    mode = mode === "login" ? "register" : "login";
+    syncAuthUI();
+  });
+  document.getElementById("btn-logout").addEventListener("click", () => {
+    Auth.clear();
+    refreshUserUI();
+  });
+  document.querySelectorAll("[data-nav-app]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      goApp();
+    });
+  });
+
+  document.getElementById("auth-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = document.getElementById("auth-error");
+    err.classList.add("hidden");
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+    const name = document.getElementById("auth-name").value.trim() || email.split("@")[0];
+    try {
+      const data = mode === "register"
+        ? await LI.register(email, password, name)
+        : await LI.login(email, password);
+      Auth.setSession(data.access_token, data.user);
+      closeAuth();
+      window.location.href = "/oturumlar";
+    } catch (ex) {
+      err.textContent = ex.message || "İşlem başarısız";
+      err.classList.remove("hidden");
+    }
+  });
+
+  // Animations
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = "running";
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll(".fade-in-up").forEach((el) => {
+    el.style.animationPlayState = "paused";
+    observer.observe(el);
+  });
+
+  refreshUserUI();
+  if (new URLSearchParams(location.search).get("login") === "1") openAuth("login");
+</script>
+</body>
+</html>
