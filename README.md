@@ -1,4 +1,8 @@
-# Betula
+<p align="center">
+  <img src="frontend/assets/betula-logo.png" alt="Betula" width="120" height="120"/>
+</p>
+
+<h1 align="center">Betula</h1>
 
 **Bilgelik ağacı.** Notlarınızı okur, eksiklerini bulur, araştırır ve sizin için bütün bir çalışma notuna dönüştürür.
 
