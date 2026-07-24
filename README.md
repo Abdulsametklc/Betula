@@ -1,54 +1,66 @@
 # Betula
 
-Yerel-first çalışma asistanından bulut tabanlı (Groq) araştırma boru hattına geçiş.
+**Bilgelik ağacı.** Notlarınızı okur, eksiklerini bulur, araştırır ve sizin için bütün bir çalışma notuna dönüştürür.
+
+Betula; ders notları, PDF’ler ve belgelerle çalışırken “ne eksik?” sorusunu sizin yerinize soran bir çalışma asistanıdır. Kaynağı yüklediğinizde boşlukları tespit eder, güvenilir web sonuçlarıyla tamamlar ve Master Sentez olarak sunar. Aynı oturumda sohbet eder, quiz çözer, flashcard üretir; her şey tek bir çalışma alanında kalır.
+
+---
+
+## Ne işe yarar?
+
+- **Dağınık notları birleştirir** — Yarım kalmış, dağınık veya eksik anlatımlı materyalleri okunabilir, hiyerarşik bir senteze çevirir.
+- **Eksikleri görünür kılar** — Anlaşılmayan veya atlanan konuları tespit eder; her birini ekranda özet ve kaynaklarıyla gösterir.
+- **Aktif öğrenmeyi destekler** — Konuya özel çoktan seçmeli ve doğru/yanlış quiz’ler, flashcard’lar ve sohbetle pekiştirme.
+- **Çalışmayı ayırır** — Her oturum kendi kaynakları, sohbetleri, quiz arşivi ve sentezleriyle bağımsız bir çalışma alanıdır.
+
+Kısaca: Betula, “yükle → anla → tamamla → pekiştir” döngüsünü tek ürün olarak sunar.
+
+---
 
 ## Özellikler
 
-- JWT auth (kayıt / giriş)
-- PDF/DOCX yükleme (PyMuPDF)
-- LangGraph pipeline: Parse → Gap analizi → DuckDuckGo araştırma → Markdown sentez
-- Kullanıcı bazlı kalıcı FAISS
-- RAG sohbet + hafıza motoru
-- Flashcard / quiz API
+**Çalışma oturumları**  
+Her ders veya proje için ayrı bir alan. İsim verin; kaynaklar, sohbet geçmişi, quiz arşivi ve eksik bilgiler o oturumda kalsın.
 
-## Kurulum
+**Master Sentez**  
+Yüklenen belge taranır, eksikler bulunur, web araştırması yapılır ve Markdown çalışma notu üretilir. Süreç boyunca anlaşılır durum mesajları ve kısa “biliyor muydun?” ipuçları eşlik eder.
 
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env
-```
+**Eksik bilgilerin keşfi**  
+Tespit edilen boşluklar konuya göre listelenir; araştırma özetleri ve kaynak bağlantıları doğrudan panoda okunur.
 
-`.env` içine [Groq Console](https://console.groq.com/keys) anahtarını yaz:
+**Akıllı sohbet**  
+Belge ve sentez bağlamına dayalı yanıtlar. Cevaplar akışkan (streaming) gelir; yazılırken okursunuz.
 
-```
-GROQ_API_KEY=gsk_...
-```
+**Quiz ve flashcard**  
+Çoktan seçmeli ve doğru/yanlış sorular. Soru sayısı (5 / 10 / 15) ve konu seçimi. Tamamlanan denemeler arşivlenir; yarım kalanlar yeniden sorulabilir.
 
-Model seçmen gerekmez. Varsayılanlar:
-- Kalite: `llama-3.3-70b-versatile` (chat, sentez, quiz)
-- Hızlı: `llama-3.1-8b-instant` (hafıza, web özetleri)
+**Kişisel hafıza**  
+Tercihlerinizi ve öğrenme bağlamınızı hatırlar; sohbeti size göre şekillendirir.
 
-## Çalıştırma
+---
 
-Proje kökünden:
+## Teknolojiler
 
-```bash
-uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
-```
+| Katman | Seçim |
+|--------|--------|
+| API | FastAPI |
+| Dil modeli | Groq (Llama ailesi) |
+| Ajan / boru hattı | LangGraph |
+| Erişim artırımlı üretim | LangChain + FAISS |
+| Belge okuma | PyMuPDF, python-docx |
+| Web araştırma | DuckDuckGo |
+| Veri | SQLite |
+| Arayüz | Modern HTML / CSS / JS (Betula teması) |
+| Kimlik | JWT |
 
-- API docs: http://127.0.0.1:8000/docs
-- Health: http://127.0.0.1:8000/health
+Hızlı çıkarım için Groq; yapılandırılmış araştırma için LangGraph; belgeye bağlı cevaplar için RAG. Hepsi tek bir monolit hizmette bir araya gelir — kurması ve anlaması sade, etkisi derin.
 
-## Frontend (Stitch)
+---
 
-- Ana sayfa: http://127.0.0.1:8000/
-- Çalışma alanı: http://127.0.0.1:8000/app
-- Kaynak: `frontend/`
+## Neden “Betula”?
 
-## Notlar
+*Betula*, huş ağacının Latince adıdır. Yazıya, hafızaya ve yenilenmeye işaret eder. Ürün de aynı ruhla tasarlandı: kökleri sizin kaynaklarınızda, dalları araştırmada, yaprakları ise sentezlenmiş bilgide.
 
-- Web arama varsayılanı DuckDuckGo (ücretsiz).
-- Streamlit / Ollama / Gemini kaldırıldı.
+---
+
+*Bilgiyi yükle. Eksikleri tamamla. Öğrenmeyi büyüt.*
