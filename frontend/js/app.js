@@ -35,34 +35,77 @@
     el._t = setTimeout(() => el.classList.add("hidden"), ms);
   }
 
+  function closeStudyModals() {
+    ["modal-flashcards", "modal-quiz"].forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.classList.add("is-hidden");
+      el.setAttribute("aria-hidden", "true");
+    });
+    document.body.style.overflow = "";
+  }
+
+  function openStudyModal(kind) {
+    closeStudyModals();
+    const id = kind === "quiz" ? "modal-quiz" : "modal-flashcards";
+    const el = $(id);
+    if (!el) return;
+    el.classList.remove("is-hidden");
+    el.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
   function setView(view) {
     const notes = $("panel-notes");
-    const fc = $("panel-flashcards");
-    const quiz = $("panel-quiz");
-    notes.classList.add("panel-hidden");
-    fc.classList.add("panel-hidden");
-    quiz.classList.add("panel-hidden");
-    if (view === "flashcards") fc.classList.remove("panel-hidden");
-    else if (view === "quiz") quiz.classList.remove("panel-hidden");
-    else notes.classList.remove("panel-hidden");
+    if (notes) notes.classList.remove("panel-hidden");
 
-    document.querySelectorAll(".nav-btn").forEach((btn) => {
-      const active = btn.dataset.view === view || (view === "notes" && btn.dataset.view === "notes") || (view === "sources" && btn.dataset.view === "sources") || (view === "history" && btn.dataset.view === "history");
-      btn.classList.toggle("nav-active", active && ["notes", "flashcards", "quiz"].includes(btn.dataset.view));
-      if (!["notes", "flashcards", "quiz"].includes(btn.dataset.view)) {
-        btn.classList.remove("nav-active");
-      }
+    const markNav = (activeView) => {
+      document.querySelectorAll("#nav-main .nav-btn[data-view]").forEach((btn) => {
+        btn.classList.toggle("nav-active", btn.dataset.view === activeView);
+      });
+    };
+
+    if (view === "flashcards") {
+      openStudyModal("flashcards");
+      markNav("flashcards");
+      loadFlashcards();
+      return;
+    }
+    if (view === "quiz") {
+      openStudyModal("quiz");
+      markNav("quiz");
+      startQuizFlow();
+      return;
+    }
+
+    closeStudyModals();
+    markNav(view === "sources" ? "notes" : view || "notes");
+  }
+
+  function showSidebarPanel(which) {
+    // which: 'main' | 'sources'
+    const main = $("nav-main");
+    const sources = $("nav-sources");
+    [main, sources].forEach((el) => {
+      if (!el) return;
+      el.classList.add("hidden");
+      el.classList.remove("flex");
     });
-
-    if (view === "flashcards") loadFlashcards();
-    if (view === "quiz") startQuizFlow();
-    if (view === "history") loadConversations();
+    const target = which === "sources" ? sources : main;
+    if (target) {
+      target.classList.remove("hidden");
+      target.classList.add("flex");
+    }
+    if (which === "sources") {
+      loadDocuments().catch(() => {});
+    }
   }
 
   function renderSources() {
     const list = $("sources-list");
+    if (!list) return;
     if (!state.documents.length) {
-      list.innerHTML = `<p class="text-sm text-on-surface-variant">Henüz kaynak yok. PDF/DOCX yükle.</p>`;
+      list.innerHTML = `<p class="text-sm text-on-surface-variant px-2">Henüz kaynak yok. Ana menüden Yeni Kaynak ile yükle.</p>`;
       return;
     }
     list.innerHTML = state.documents
@@ -71,14 +114,18 @@
         const iconBg = d.doc_type === "pdf" ? "bg-error-container text-on-error-container" : "bg-primary-container text-on-primary-container";
         const icon = d.doc_type === "pdf" ? "picture_as_pdf" : "description";
         return `
-        <button data-doc-id="${d.id}" class="source-item glass-card p-3 rounded-lg flex items-start gap-3 text-left w-full transition-all ${active ? "border-primary" : "hover:border-primary"} bg-surface-container-lowest">
-          <div class="w-8 h-8 rounded ${iconBg} flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">${icon}</span>
-          </div>
-          <div class="overflow-hidden">
-            <h3 class="text-[14px] font-medium truncate text-on-surface">${escapeHtml(d.filename)}</h3>
-            <p class="text-[12px] text-on-surface-variant truncate mt-1">${d.is_processed ? "İşlendi" : "Bekliyor"} · ${formatDate(d.upload_date)}</p>
-          </div>
+        <button data-doc-id="${d.id}" class="source-item w-full text-left rounded-lg border px-3 py-2.5 transition-all ${
+          active ? "border-primary bg-primary-container/40" : "border-outline-variant bg-surface-container-lowest hover:border-primary"
+        }">
+          <span class="flex items-start gap-2">
+            <span class="w-8 h-8 rounded ${iconBg} flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">${icon}</span>
+            </span>
+            <span class="min-w-0 overflow-hidden">
+              <span class="block text-[13px] font-semibold text-on-surface truncate">${escapeHtml(d.filename)}</span>
+              <span class="block text-[11px] text-on-surface-variant truncate mt-1">${d.is_processed ? "İşlendi" : "Bekliyor"} · ${formatDate(d.upload_date)}</span>
+            </span>
+          </span>
         </button>`;
       })
       .join("");
@@ -88,23 +135,37 @@
     });
   }
 
-  function renderHistory() {
-    const list = $("history-list");
-    if (!state.conversations.length) {
-      list.innerHTML = `<p class="text-sm text-on-surface-variant">Sohbet yok.</p>`;
+  async function bindSessionChat() {
+    state.conversations = await LI.conversations();
+    const conv = state.conversations[0] || null;
+    if (!conv) {
+      state.conversationId = null;
+      clearChat();
       return;
     }
-    list.innerHTML = state.conversations
-      .map(
-        (c) => `
-      <button data-conv-id="${c.id}" class="text-[13px] text-left text-on-surface hover:text-primary cursor-pointer transition-colors truncate pb-2 border-b border-outline-variant w-full">
-        ${escapeHtml(c.title || "Sohbet")}
-      </button>`
-      )
-      .join("");
-    list.querySelectorAll("[data-conv-id]").forEach((btn) => {
-      btn.addEventListener("click", () => openConversation(Number(btn.dataset.convId)));
-    });
+    if (state.conversationId === conv.id && $("chat-messages")?.children.length) {
+      return;
+    }
+    state.conversationId = conv.id;
+    clearChat();
+    const msgs = await LI.messages(conv.id);
+    msgs.forEach((m) => appendChat(m.role, m.content));
+  }
+
+  async function loadConversations() {
+    await bindSessionChat();
+  }
+
+  function formatChatHtml(content, { markdown = false } = {}) {
+    const text = content == null ? "" : String(content);
+    if (!markdown || typeof marked === "undefined") {
+      return escapeHtml(text);
+    }
+    try {
+      return marked.parse(text, { breaks: true });
+    } catch {
+      return escapeHtml(text);
+    }
   }
 
   function appendChat(role, content) {
@@ -114,11 +175,14 @@
     wrap.className = isUser
       ? "flex items-start gap-3 self-end flex-row-reverse max-w-[85%]"
       : "flex items-start gap-3 max-w-[92%]";
+    const bodyClass = isUser
+      ? "bg-surface-container rounded-tr-none whitespace-pre-wrap"
+      : "bg-surface-container rounded-tl-none chat-md [&_p]:my-1.5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5 [&_strong]:font-semibold [&_code]:text-[12px] [&_code]:bg-surface-container-high [&_code]:px-1 [&_code]:rounded";
     wrap.innerHTML = `
       <div class="w-8 h-8 rounded-full ${isUser ? "bg-surface-container" : "bg-primary-container text-on-primary-container border border-outline-variant"} flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-[16px]">${isUser ? "person" : "robot_2"}</span>
       </div>
-      <div data-chat-body class="${isUser ? "bg-surface-container rounded-tr-none" : "bg-surface-container rounded-tl-none"} p-3 rounded-lg text-[14px] leading-relaxed text-on-surface border border-outline-variant whitespace-pre-wrap">${escapeHtml(content)}</div>`;
+      <div data-chat-body data-markdown="${isUser ? "0" : "1"}" class="${bodyClass} p-3 rounded-lg text-[14px] leading-relaxed text-on-surface border border-outline-variant">${formatChatHtml(content, { markdown: !isUser })}</div>`;
     box.appendChild(wrap);
     box.scrollTop = box.scrollHeight;
     return wrap.querySelector("[data-chat-body]");
@@ -126,7 +190,9 @@
 
   function setChatBody(el, content) {
     if (!el) return;
-    el.textContent = content;
+    const useMd = el.getAttribute("data-markdown") === "1";
+    if (useMd) el.innerHTML = formatChatHtml(content, { markdown: true });
+    else el.textContent = content;
     const box = $("chat-messages");
     box.scrollTop = box.scrollHeight;
   }
@@ -143,17 +209,13 @@
     }
   }
 
-  async function loadConversations() {
-    state.conversations = await LI.conversations();
-    renderHistory();
-  }
-
   async function selectDocument(id) {
     state.selectedDocId = id;
     renderSources();
     const doc = state.documents.find((d) => d.id === id);
-    $("doc-title").textContent = doc?.filename || `Doküman #${id}`;
+    $("doc-title").textContent = doc?.filename || `Özet`;
     $("btn-compile").disabled = false;
+    showSidebarPanel("main");
     setView("notes");
     await loadCompiledNote(id);
   }
@@ -161,32 +223,43 @@
   async function loadCompiledNote(docId) {
     const noteBox = $("note-content");
     const gaps = $("gap-list");
-    const dl = $("btn-download-note");
+    const exportNote = $("export-note-wrap");
+    const exportMaster = $("export-master-wrap");
     try {
       const note = await LI.compiledNote(docId);
       const html = typeof marked !== "undefined" ? marked.parse(note.markdown || "") : escapeHtml(note.markdown || "");
       noteBox.innerHTML = `<div class="max-w-3xl mx-auto bg-surface-container-lowest border border-outline-variant rounded-lg p-8 shadow-md prose-note">${html}</div>`;
       renderGaps(note.gap_list || []);
-      dl.classList.remove("hidden");
-      dl.href = `${API_BASE}/documents/${docId}/compiled-note/download`;
-      dl.onclick = (e) => {
-        e.preventDefault();
-        fetch(dl.href, { headers: { Authorization: `Bearer ${Auth.token}` } })
-          .then((r) => r.blob())
-          .then((blob) => {
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `compiled_note_${docId}.md`;
-            a.click();
-          });
-      };
+      exportNote?.classList.remove("hidden");
+      exportMaster?.classList.remove("hidden");
     } catch {
       noteBox.innerHTML = `<div class="max-w-3xl mx-auto bg-surface-container-lowest border border-outline-variant rounded-lg p-8 shadow-md prose-note">
         <h2 class="text-[22px] font-semibold mb-3">Derlenmiş not yok</h2>
         <p class="text-on-surface-variant mb-4">Bu kaynak henüz işlenmedi. “Derle” ile araştırma boru hattını başlat.</p>
       </div>`;
       gaps.innerHTML = `<li class="text-sm text-on-surface-variant">Henüz gap yok.</li>`;
-      dl.classList.add("hidden");
+      exportNote?.classList.add("hidden");
+      exportMaster?.classList.add("hidden");
+    }
+  }
+
+  function closeExportMenus() {
+    $("export-note-menu")?.classList.add("hidden");
+    $("export-master-menu")?.classList.add("hidden");
+  }
+
+  async function exportCurrent(kind, format) {
+    if (!state.selectedDocId) {
+      toast("Once bir kaynak sec");
+      return;
+    }
+    try {
+      await LI.downloadCompiledNote(state.selectedDocId, { kind, format });
+      toast("Indirme basladi");
+    } catch (e) {
+      toast(e.message || "Indirme basarisiz");
+    } finally {
+      closeExportMenus();
     }
   }
 
@@ -220,7 +293,7 @@
         <li class="bg-surface-container rounded-lg border-l-4 border-l-primary border border-outline-variant overflow-hidden">
           <button data-gap-toggle="${i}" class="w-full text-left p-3 flex items-start justify-between gap-2 hover:bg-surface-container-high transition-colors">
             <span class="min-w-0">
-              <span class="block text-[13px] font-semibold text-on-surface">${escapeHtml(g.topic || "Konu")}</span>
+              <span class="block text-[13px] font-semibold text-on-surface">${escapeHtml(g.topic || "Konu")}${g.from_chat ? ' <span class="text-[10px] font-medium text-primary">· sohbet</span>' : ""}</span>
               <span class="block text-[12px] text-on-surface-variant mt-1">${escapeHtml(g.reason || "")}</span>
             </span>
             <span class="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0" data-gap-icon="${i}">expand_more</span>
@@ -396,12 +469,8 @@
     }
   }
 
-  async function openConversation(id) {
-    state.conversationId = id;
-    clearChat();
-    const msgs = await LI.messages(id);
-    msgs.forEach((m) => appendChat(m.role, m.content));
-    setView("notes");
+  function focusSourcesPanel() {
+    showSidebarPanel("sources");
   }
 
   async function sendChat(text) {
@@ -410,8 +479,9 @@
     $("chat-input").value = "";
     const bodyEl = appendChat("assistant", "…");
     let assembled = "";
+    let gotToken = false;
     try {
-      await LI.chatStream(
+      const done = await LI.chatStream(
         {
           message: text,
           conversation_id: state.conversationId,
@@ -422,17 +492,36 @@
           onMeta: (meta) => {
             if (meta?.conversation_id) state.conversationId = meta.conversation_id;
           },
+          onStatus: (msg) => {
+            if (!gotToken) setChatBody(bodyEl, msg || "…");
+          },
           onToken: (chunk) => {
+            if (!gotToken) {
+              gotToken = true;
+              assembled = "";
+            }
             assembled += chunk;
             setChatBody(bodyEl, assembled);
           },
           onError: (detail) => {
             if (!assembled) setChatBody(bodyEl, "Hata: " + detail);
           },
+          onDone: async (payload) => {
+            if (payload?.conversation_id) state.conversationId = payload.conversation_id;
+            if (payload?.note_updated && state.selectedDocId) {
+              toast("Yeni bilgi Master Sentez’e eklendi");
+              setView("notes");
+              await loadCompiledNote(state.selectedDocId);
+            } else if (payload?.researched) {
+              toast("Belgede yoktu — araştırılarak cevaplandı");
+            }
+            await loadConversations();
+          },
         }
       );
       if (!assembled) setChatBody(bodyEl, "(Boş yanıt)");
       await loadConversations();
+      return done;
     } catch (e) {
       setChatBody(bodyEl, "Hata: " + e.message);
     }
@@ -459,21 +548,42 @@
       return;
     }
     const card = cards[state.flashIndex];
-    const side = state.flashFlipped ? card.answer : card.question;
     area.innerHTML = `
       <div class="w-full max-w-lg">
-        <p class="text-xs uppercase tracking-wider text-on-surface-variant mb-2">${state.flashIndex + 1} / ${cards.length} · ${state.flashFlipped ? "Cevap" : "Soru"}</p>
-        <button id="fc-flip" class="w-full min-h-[180px] p-6 rounded-xl border border-outline-variant bg-surface-container-lowest text-left hover:border-primary transition-colors">
-          <p class="text-[16px] text-on-surface whitespace-pre-wrap">${escapeHtml(side)}</p>
-        </button>
+        <p id="fc-progress" class="text-xs uppercase tracking-wider text-on-surface-variant mb-2">${state.flashIndex + 1} / ${cards.length} · ${state.flashFlipped ? "Cevap" : "Soru"} · tıkla çevir</p>
+        <div class="fc-scene">
+          <div id="fc-flip" class="fc-card${state.flashFlipped ? " is-flipped" : ""}" role="button" tabindex="0" aria-label="Kartı çevir">
+            <div class="fc-face fc-face-front">
+              <span class="fc-face-label">Soru</span>
+              <p class="fc-face-text">${escapeHtml(card.question || "")}</p>
+            </div>
+            <div class="fc-face fc-face-back">
+              <span class="fc-face-label">Cevap</span>
+              <p class="fc-face-text">${escapeHtml(card.answer || "")}</p>
+            </div>
+          </div>
+        </div>
         <div class="flex gap-3 mt-4">
           <button id="fc-prev" class="flex-1 py-2 rounded-lg border border-outline-variant text-sm" ${state.flashIndex === 0 ? "disabled" : ""}>Önceki</button>
           <button id="fc-next" class="flex-1 py-2 rounded-lg bg-primary text-on-primary text-sm">Sonraki</button>
         </div>
       </div>`;
-    $("fc-flip").onclick = () => {
+
+    const flipEl = $("fc-flip");
+    const progress = $("fc-progress");
+    const toggleFlip = () => {
       state.flashFlipped = !state.flashFlipped;
-      renderFlashcard();
+      flipEl.classList.toggle("is-flipped", state.flashFlipped);
+      if (progress) {
+        progress.textContent = `${state.flashIndex + 1} / ${cards.length} · ${state.flashFlipped ? "Cevap" : "Soru"} · tıkla çevir`;
+      }
+    };
+    flipEl.onclick = toggleFlip;
+    flipEl.onkeydown = (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleFlip();
+      }
     };
     $("fc-prev").onclick = () => {
       if (state.flashIndex > 0) {
@@ -844,9 +954,139 @@
 
   // Events
   $("btn-logout").onclick = () => {
-    Auth.clear();
-    location.href = "/";
+    if (window.ProfileMenu?.confirmLogout) ProfileMenu.confirmLogout();
+    else {
+      Auth.clear();
+      location.href = "/";
+    }
   };
+
+  // Sol panel: kapat/aç + genişlik kaydırma
+  (function initSidebarChrome() {
+    const sidebar = $("app-sidebar");
+    const main = $("app-main");
+    const toggle = $("sidebar-toggle");
+    const icon = $("sidebar-toggle-icon");
+    const resizer = $("sidebar-resizer");
+    if (!sidebar || !main || !toggle) return;
+
+    const KEY_W = "betula_sidebar_w";
+    const KEY_C = "betula_sidebar_collapsed";
+    const MAX = 256;
+
+    function measureMinWidth() {
+      const labels = sidebar.querySelectorAll("#nav-main .nav-btn .font-label-sm, #btn-new-upload");
+      let maxLabel = 120;
+      labels.forEach((el) => {
+        maxLabel = Math.max(maxLabel, el.scrollWidth || 0);
+      });
+      // ikon (24) + gap + padding yatay (~48) + badge payı
+      const min = Math.ceil(maxLabel + 24 + 12 + 48 + 28);
+      return Math.min(MAX, Math.max(188, min));
+    }
+
+    let minW = measureMinWidth();
+    document.documentElement.style.setProperty("--sidebar-min", `${minW}px`);
+    document.documentElement.style.setProperty("--sidebar-max", `${MAX}px`);
+
+    let width = Number(localStorage.getItem(KEY_W)) || MAX;
+    width = Math.min(MAX, Math.max(minW, width));
+    let collapsed = localStorage.getItem(KEY_C) === "1";
+
+    function apply() {
+      minW = measureMinWidth();
+      document.documentElement.style.setProperty("--sidebar-min", `${minW}px`);
+      width = Math.min(MAX, Math.max(minW, width));
+      const shown = collapsed ? 0 : width;
+      document.documentElement.style.setProperty("--sidebar-w", `${shown}px`);
+      sidebar.classList.toggle("is-collapsed", collapsed);
+      main.classList.toggle("is-sidebar-collapsed", collapsed);
+      toggle.classList.toggle("is-collapsed", collapsed);
+      if (icon) icon.textContent = collapsed ? "chevron_right" : "chevron_left";
+      toggle.title = collapsed ? "Sol paneli aç" : "Sol paneli kapat";
+      localStorage.setItem(KEY_W, String(width));
+      localStorage.setItem(KEY_C, collapsed ? "1" : "0");
+    }
+
+    apply();
+
+    toggle.addEventListener("click", () => {
+      collapsed = !collapsed;
+      apply();
+    });
+
+    if (resizer) {
+      let dragging = false;
+      const onMove = (e) => {
+        if (!dragging || collapsed) return;
+        const x = e.touches ? e.touches[0].clientX : e.clientX;
+        width = Math.min(MAX, Math.max(minW, x));
+        document.documentElement.style.setProperty("--sidebar-w", `${width}px`);
+      };
+      const onUp = () => {
+        if (!dragging) return;
+        dragging = false;
+        sidebar.classList.remove("is-resizing");
+        main.classList.remove("is-resizing");
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onUp);
+        apply();
+      };
+      const onDown = (e) => {
+        if (collapsed) return;
+        e.preventDefault();
+        dragging = true;
+        sidebar.classList.add("is-resizing");
+        main.classList.add("is-resizing");
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+        window.addEventListener("touchmove", onMove, { passive: false });
+        window.addEventListener("touchend", onUp);
+      };
+      resizer.addEventListener("pointerdown", onDown);
+      resizer.addEventListener("touchstart", onDown, { passive: false });
+    }
+
+    window.addEventListener("resize", () => {
+      minW = measureMinWidth();
+      apply();
+    });
+  })();
+
+  (function initMasterPanel() {
+    const panel = $("master-panel");
+    const toggle = $("master-toggle");
+    const closeBtn = $("btn-master-close");
+    const icon = $("master-toggle-icon");
+    if (!panel || !toggle) return;
+
+    const KEY = "betula_master_collapsed";
+    let collapsed = localStorage.getItem(KEY) === "1";
+
+    function apply() {
+      panel.classList.toggle("is-collapsed", collapsed);
+      toggle.classList.toggle("is-collapsed", collapsed);
+      if (icon) icon.textContent = collapsed ? "chevron_left" : "chevron_right";
+      toggle.title = collapsed ? "Master Sentez’i aç" : "Master Sentez’i kapat";
+      localStorage.setItem(KEY, collapsed ? "1" : "0");
+    }
+
+    function setCollapsed(v) {
+      collapsed = !!v;
+      apply();
+    }
+
+    toggle.addEventListener("click", () => setCollapsed(!collapsed));
+    closeBtn?.addEventListener("click", () => setCollapsed(true));
+    apply();
+  })();
+
   $("btn-new-upload").onclick = () => $("file-input").click();
   $("btn-add-source").onclick = () => $("file-input").click();
   $("file-input").onchange = (e) => uploadFile(e.target.files?.[0]);
@@ -868,22 +1108,42 @@
   $("btn-quiz-new").onclick = renderQuizSetup;
   $("btn-quiz-archive").onclick = renderQuizArchive;
 
-  document.querySelectorAll(".nav-btn, .tool-btn").forEach((btn) => {
+  document.querySelectorAll("[data-close-study]").forEach((el) => {
+    el.addEventListener("click", () => {
+      closeStudyModals();
+      setView("notes");
+    });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const fcOpen = !$("modal-flashcards")?.classList.contains("is-hidden");
+    const quizOpen = !$("modal-quiz")?.classList.contains("is-hidden");
+    if (fcOpen || quizOpen) {
+      closeStudyModals();
+      setView("notes");
+    }
+  });
+
+  document.querySelectorAll(".nav-btn[data-view], .tool-btn[data-view]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const v = btn.dataset.view;
-      if (v === "sources") {
-        setView("notes");
-        $("btn-add-source")?.focus();
-      } else if (v === "history") {
-        setView("notes");
-        loadConversations();
-      } else if (v) setView(v);
+      if (!v) return;
+      showSidebarPanel("main");
+      setView(v);
     });
+  });
+
+  $("btn-open-sources")?.addEventListener("click", () => {
+    showSidebarPanel("sources");
+  });
+  $("btn-sources-back")?.addEventListener("click", () => {
+    showSidebarPanel("main");
   });
 
   if (Auth.user) {
     $("session-label").textContent = "…";
   }
+  if (window.ProfileMenu) ProfileMenu.mount();
   LI.sessionGet(Auth.sessionId)
     .then((s) => {
       if (s?.title) $("session-label").textContent = s.title;
@@ -891,6 +1151,27 @@
     .catch(() => {
       $("session-label").textContent = Auth.user?.name || "Oturum";
     });
+
+  $("btn-export-note")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    $("export-master-menu")?.classList.add("hidden");
+    $("export-note-menu")?.classList.toggle("hidden");
+  });
+  $("btn-download-note")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    $("export-note-menu")?.classList.add("hidden");
+    $("export-master-menu")?.classList.toggle("hidden");
+  });
+  document.querySelectorAll("[data-export-note]").forEach((btn) => {
+    btn.addEventListener("click", () => exportCurrent("note", btn.getAttribute("data-export-note")));
+  });
+  document.querySelectorAll("[data-export-master]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const [kind, format] = (btn.getAttribute("data-export-master") || "note:docx").split(":");
+      exportCurrent(kind, format);
+    });
+  });
+  document.addEventListener("click", () => closeExportMenus());
 
   // Hash deep-links
   const hash = (location.hash || "").replace("#", "");

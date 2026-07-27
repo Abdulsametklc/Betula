@@ -26,25 +26,27 @@ def create_conversation(*, user_id: int, title: str = "Yeni Sohbet", model_name:
 
 @require_user_id
 def list_conversations(*, user_id: int, session_id: int = None, limit: int = 50) -> list:
-    """Kullanicinin sohbetlerini listeler."""
+    """Kullanicinin sohbetlerini listeler (onizleme + mesaj sayisi ile)."""
+    base = """
+        SELECT c.id, c.title, c.model_name, c.created_at, c.updated_at, c.session_id,
+               (SELECT m.content FROM messages m
+                WHERE m.conversation_id = c.id
+                ORDER BY m.id DESC LIMIT 1) AS last_message,
+               (SELECT COUNT(*) FROM messages m
+                WHERE m.conversation_id = c.id) AS message_count
+        FROM conversations c
+        WHERE c.user_id = ?
+    """
     if session_id:
         return execute_query(
-            """SELECT id, title, model_name, created_at, updated_at, session_id
-               FROM conversations 
-               WHERE user_id = ? AND session_id = ?
-               ORDER BY updated_at DESC 
-               LIMIT ?""",
+            base + " AND c.session_id = ? ORDER BY c.updated_at DESC LIMIT ?",
             (user_id, session_id, limit),
-            fetch='all'
+            fetch="all",
         )
     return execute_query(
-        """SELECT id, title, model_name, created_at, updated_at, session_id
-           FROM conversations 
-           WHERE user_id = ? 
-           ORDER BY updated_at DESC 
-           LIMIT ?""",
+        base + " ORDER BY c.updated_at DESC LIMIT ?",
         (user_id, limit),
-        fetch='all'
+        fetch="all",
     )
 
 

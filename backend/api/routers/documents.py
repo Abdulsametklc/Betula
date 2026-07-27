@@ -163,20 +163,46 @@ def get_compiled_note(document_id: int, user: CurrentUser, session: CurrentSessi
 
 
 @router.get("/{document_id}/compiled-note/download")
-def download_compiled_note(document_id: int, user: CurrentUser, session: CurrentSession):
+def download_compiled_note(
+    document_id: int,
+    user: CurrentUser,
+    session: CurrentSession,
+    format: str = "docx",
+    kind: str = "note",
+):
+    """Download Master Sentez / eksik bilgiler as md|docx|pdf."""
     from fastapi.responses import Response
+
+    from backend.services.export_docs import build_export
 
     doc = get_document(document_id, user_id=user["id"])
     if not doc or (doc.get("session_id") and doc.get("session_id") != session["id"]):
         raise HTTPException(status_code=404, detail="Dokuman bulunamadi")
 
     note = get_compiled_note_for_document(document_id, user_id=user["id"])
-    if not note or not note.get("markdown"):
+    if not note:
         raise HTTPException(status_code=404, detail="Derlenmis not yok")
+
+    fmt = (format or "docx").lower().strip()
+    if fmt not in {"md", "docx", "pdf"}:
+        raise HTTPException(status_code=400, detail="format md|docx|pdf olmali")
+    k = (kind or "note").lower().strip()
+    if k not in {"note", "gaps", "full"}:
+        raise HTTPException(status_code=400, detail="kind note|gaps|full olmali")
+
+    if k in {"note", "full"} and not (note.get("markdown") or "").strip() and k != "gaps":
+        raise HTTPException(status_code=404, detail="Derlenmis not yok")
+
+    data, media, filename = build_export(
+        note,
+        kind=k,
+        fmt=fmt,
+        doc_title=doc.get("filename"),
+    )
     return Response(
-        content=note["markdown"],
-        media_type="text/markdown; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="compiled_note_{document_id}.md"'},
+        content=data,
+        media_type=media,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

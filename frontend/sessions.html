@@ -5,34 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Betula — Çalışma Oturumları</title>
 <link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<link rel="stylesheet" href="/static/css/betula.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          primary: "#c2652a",
-          "on-primary": "#ffffff",
-          "primary-container": "#ffdbcc",
-          "on-primary-container": "#3b0a00",
-          secondary: "#765749",
-          background: "#fff8f6",
-          "on-background": "#221a16",
-          surface: "#fff8f6",
-          "on-surface": "#221a16",
-          "on-surface-variant": "#52443d",
-          "outline-variant": "#d7c2b9",
-          "surface-container-lowest": "#ffffff",
-          "surface-container": "#fceae3",
-          "surface-container-high": "#f6e4dd",
-        },
-        fontFamily: { sans: ["Manrope", "sans-serif"] },
-      },
-    },
-  };
-</script>
 <style>
   body {
     background:
@@ -66,18 +41,20 @@
 </style>
 </head>
 <body class="font-sans antialiased">
-<header class="max-w-6xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
-  <a href="/" class="flex items-center gap-3">
-    <img src="/static/assets/betula-logo.png" alt="Betula" class="w-10 h-10 object-contain"/>
-    <div>
+<!-- Sağ üst profil — çalışma ekranı ile aynı yapı -->
+<div class="app-profile-dock" id="app-profile-dock">
+  <span class="app-profile-name" data-profile-name></span>
+  <button type="button" data-profile-trigger data-profile-size="lg" title="Profil" data-profile-avatar>U</button>
+</div>
+
+<header class="max-w-6xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between gap-4 pr-28 sm:pr-40">
+  <a href="/" class="flex items-center gap-3 min-w-0">
+    <img src="/static/assets/betula-logo.png" alt="Betula" class="w-10 h-10 object-contain shrink-0"/>
+    <div class="min-w-0">
       <h1 class="text-xl font-bold tracking-tight text-primary">Betula</h1>
       <p class="text-xs uppercase tracking-widest text-on-surface-variant">Çalışma oturumları</p>
     </div>
   </a>
-  <div class="flex items-center gap-3">
-    <span id="user-chip" class="text-sm text-on-surface-variant"></span>
-    <button id="btn-logout" class="text-sm text-on-surface-variant hover:text-primary">Çıkış</button>
-  </div>
 </header>
 
 <main class="max-w-6xl mx-auto px-6 pb-16">
@@ -85,7 +62,7 @@
     <div>
       <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-background">Oturumlarını seç</h2>
       <p class="mt-2 text-on-surface-variant max-w-xl">
-        Her oturum kendi kaynakları, sohbetleri, quiz arşivi ve eksik bilgileriyle ayrı bir çalışma alanıdır.
+        Her oturum kendi kaynakları, sohbeti, quiz arşivi ve eksik bilgileriyle ayrı bir çalışma alanıdır.
       </p>
     </div>
     <button id="btn-new-session" class="primary-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold shadow-sm">
@@ -119,6 +96,7 @@
 <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-on-background text-white text-sm px-4 py-2 rounded-full shadow-lg hidden z-50"></div>
 
 <script src="/static/js/api.js"></script>
+<script src="/static/js/profile.js"></script>
 <script src="/static/js/sessions.js"></script>
 </body>
 </html>

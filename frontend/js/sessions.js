@@ -1,7 +1,8 @@
 /**
  * Betula — çalışma oturumları hub
  */
-(function () {
+(async function () {
+  await Auth.consumeOAuthHandoff();
   if (!Auth.requireAuth("/?login=1")) return;
 
   const $ = (id) => document.getElementById(id);
@@ -165,14 +166,9 @@
       toast(e.message);
     }
   };
-  $("btn-logout").onclick = () => {
-    Auth.clear();
-    location.href = "/";
-  };
 
-  if (Auth.user) {
-    $("user-chip").textContent = Auth.user.name || Auth.user.email || "";
+  if (window.ProfileMenu) {
+    ProfileMenu.mount();
   }
-
   load();
 })();

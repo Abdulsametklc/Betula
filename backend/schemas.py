@@ -21,10 +21,56 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(min_length=6)
 
 
+class UpdateProfileRequest(BaseModel):
+    name: Optional[str] = None
+    username: Optional[str] = None
+
+
+class SecurityCodeRequest(BaseModel):
+    purpose: str = Field(description="email_change | password_change | password_reset")
+
+
+class SecurityCodeVerifyRequest(BaseModel):
+    purpose: str
+    code: str = Field(min_length=4, max_length=12)
+
+
+class ConfirmEmailChangeRequest(BaseModel):
+    code: str = Field(min_length=4, max_length=12)
+    new_email: str
+
+
+class ConfirmPasswordChangeRequest(BaseModel):
+    code: str = Field(min_length=4, max_length=12)
+    new_password: str = Field(min_length=6)
+
+
+class ForgotPasswordRequest(BaseModel):
+    identifier: str = Field(min_length=1, description="E-posta veya kullanici adi")
+
+
+class ResetPasswordVerifyRequest(BaseModel):
+    identifier: str = Field(min_length=1)
+    code: str = Field(min_length=4, max_length=12)
+
+
+class ResetPasswordRequest(BaseModel):
+    identifier: str = Field(min_length=1)
+    code: str = Field(min_length=4, max_length=12)
+    new_password: str = Field(min_length=6)
+
+
+class AvatarIconRequest(BaseModel):
+    icon: str = Field(min_length=1, max_length=64)
+
+
 class UserOut(BaseModel):
     id: int
     email: str
     name: Optional[str] = None
+    username: Optional[str] = None
+    avatar_type: str = "default"
+    avatar_value: Optional[str] = None
 
 
 class TokenResponse(BaseModel):
@@ -45,6 +91,9 @@ class ChatResponse(BaseModel):
     reply: str
     sources: List[str] = []
     memory_note: Optional[str] = None
+    note_updated: bool = False
+    researched: bool = False
+    title: Optional[str] = None
 
 
 class ConversationCreate(BaseModel):

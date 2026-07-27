@@ -69,8 +69,8 @@ KULLANICI SORUSU: {question}
 
 KRİTİK KURALLAR:
 - SADECE TÜRKÇE YANIT VER.
-- SADECE DÖKÜMAN İÇERİĞİNDEKİ bilgileri kullan. Uydurma yapma.
-- Bilgi dokümanda yoksa açıkça belirt.
+- Önce DÖKÜMAN İÇERİĞİNDEKİ bilgileri kullan.
+- Bilgi dokümanda net yoksa "bilmiyorum / dokümanda yok" deme; kısa ve dürüst bir çerçeve ver, uydurma yapma.
 - Yapılandırılmış ve anlaşılır yanıtlar ver.
 
 🇹🇷 TÜRKÇE YANITINI VER:"""

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hesap Bilgileri - Betula</title>
+<link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<link rel="stylesheet" href="/static/css/betula.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  body { background: #fff8f6; color: #231a14; margin: 0; font-family: Manrope, sans-serif; }
+  .primary-btn { background: #c2652a; color: #fff; }
+  .primary-btn:hover { background: #b0571f; }
+  .card { background: #fff; border: 1px solid #d7c2b6; }
+  .sec-modal {
+    position: fixed; inset: 0; z-index: 80;
+    display: none; align-items: center; justify-content: center;
+    padding: 1rem; background: rgba(34,26,22,0.45); backdrop-filter: blur(6px);
+  }
+  .sec-modal.is-open { display: flex; }
+  .sec-modal-panel {
+    width: 100%; max-width: 420px; background: #fff;
+    border: 1px solid #d7c2b6; border-radius: 1rem;
+    box-shadow: 0 24px 64px rgba(34,26,22,0.28); padding: 1.5rem;
+  }
+  .sec-code-input {
+    letter-spacing: 0.35em; text-align: center; font-size: 1.5rem;
+    font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+</style>
+</head>
+<body class="min-h-screen">
+<header class="max-w-3xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
+  <a href="/oturumlar" class="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors">
+    <span class="material-symbols-outlined">arrow_back</span>
+    <span class="text-sm font-medium">Geri</span>
+  </a>
+  <div class="relative">
+    <button type="button" data-profile-trigger class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container border border-outline-variant flex items-center justify-center font-semibold shadow-sm hover:ring-2 hover:ring-primary/30 transition" data-profile-avatar>U</button>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-6 pb-16">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container border border-outline-variant flex items-center justify-center text-xl font-semibold overflow-hidden" data-profile-avatar>U</div>
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Hesap bilgileri</h1>
+      <p class="text-sm text-on-surface-variant mt-1">İsim, kullanıcı adı, e-posta ve şifreni buradan yönet.</p>
+    </div>
+  </div>
+
+  <div id="profile-alert" class="hidden mb-4 px-4 py-3 rounded-xl text-sm border"></div>
+
+  <section class="card rounded-2xl p-5 md:p-6 mb-4 shadow-sm">
+    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary mb-4">İsim</h2>
+    <form id="form-name" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+      <label class="flex-1 block">
+        <span class="text-xs text-on-surface-variant">Görünen ad</span>
+        <input id="field-name" type="text" required class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
+      </label>
+      <button type="submit" class="primary-btn px-5 py-2.5 rounded-lg text-sm font-semibold shrink-0">Kaydet</button>
+    </form>
+  </section>
+
+  <section class="card rounded-2xl p-5 md:p-6 mb-4 shadow-sm">
+    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary mb-4">Kullanıcı adı</h2>
+    <form id="form-username" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+      <label class="flex-1 block">
+        <span class="text-xs text-on-surface-variant">3–32 karakter, harf / rakam / _</span>
+        <input id="field-username" type="text" required pattern="[A-Za-z0-9_]{3,32}" class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
+      </label>
+      <button type="submit" class="primary-btn px-5 py-2.5 rounded-lg text-sm font-semibold shrink-0">Kaydet</button>
+    </form>
+  </section>
+
+  <section class="card rounded-2xl p-5 md:p-6 mb-4 shadow-sm">
+    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary mb-4">E-posta</h2>
+    <p id="current-email" class="text-sm text-on-surface mb-3">—</p>
+    <p class="text-xs text-on-surface-variant mb-4">Değiştirmek için mevcut adresine aktivasyon kodu gönderilir.</p>
+    <button type="button" id="btn-change-email" class="primary-btn px-5 py-2.5 rounded-lg text-sm font-semibold">E-postayı değiştir</button>
+  </section>
+
+  <section class="card rounded-2xl p-5 md:p-6 shadow-sm">
+    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary mb-4">Şifre</h2>
+    <p class="text-xs text-on-surface-variant mb-4">Değiştirmek için e-postana aktivasyon kodu gönderilir.</p>
+    <button type="button" id="btn-change-password" class="primary-btn px-5 py-2.5 rounded-lg text-sm font-semibold">Şifreyi değiştir</button>
+  </section>
+</main>
+
+<div id="sec-modal" class="sec-modal" aria-hidden="true">
+  <div class="sec-modal-panel" role="dialog" aria-modal="true" aria-labelledby="sec-title">
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <div>
+        <h3 id="sec-title" class="text-lg font-semibold text-on-surface">Güvenlik doğrulama</h3>
+        <p id="sec-subtitle" class="text-sm text-on-surface-variant mt-1"></p>
+      </div>
+      <button type="button" id="sec-close" class="text-on-surface-variant hover:text-primary p-1" aria-label="Kapat">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div id="sec-step-request" class="space-y-4">
+      <p class="text-sm text-on-surface-variant">Mevcut e-posta adresine 6 haneli aktivasyon kodu gönderilecek.</p>
+      <button type="button" id="sec-send" class="primary-btn w-full py-2.5 rounded-lg text-sm font-semibold">Kod gönder</button>
+    </div>
+
+    <div id="sec-step-code" class="hidden space-y-4">
+      <label class="block">
+        <span class="text-xs text-on-surface-variant uppercase tracking-wider">Aktivasyon kodu</span>
+        <input id="sec-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+          class="sec-code-input mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary py-3"
+          placeholder="••••••"/>
+      </label>
+      <button type="button" id="sec-verify" class="primary-btn w-full py-2.5 rounded-lg text-sm font-semibold">Kodu doğrula</button>
+      <button type="button" id="sec-resend" class="w-full text-sm text-on-surface-variant hover:text-primary">Kodu yeniden gönder</button>
+    </div>
+
+    <div id="sec-step-new" class="hidden space-y-4">
+      <div id="sec-new-email-wrap" class="hidden">
+        <label class="block">
+          <span class="text-xs text-on-surface-variant">Yeni e-posta</span>
+          <input id="sec-new-email" type="email" class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
+        </label>
+      </div>
+      <div id="sec-new-password-wrap" class="hidden space-y-3">
+        <label class="block">
+          <span class="text-xs text-on-surface-variant">Yeni şifre (en az 6 karakter)</span>
+          <input id="sec-new-password" type="password" minlength="6" autocomplete="new-password" class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
+        </label>
+        <label class="block">
+          <span class="text-xs text-on-surface-variant">Yeni şifre (tekrar)</span>
+          <input id="sec-new-password2" type="password" minlength="6" autocomplete="new-password" class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
+        </label>
+      </div>
+      <button type="button" id="sec-confirm" class="primary-btn w-full py-2.5 rounded-lg text-sm font-semibold">Tamamla</button>
+    </div>
+
+    <p id="sec-error" class="hidden mt-4 text-sm text-error"></p>
+    <p id="sec-hint" class="hidden mt-3 text-xs text-on-surface-variant"></p>
+  </div>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script src="/static/js/profile.js"></script>
+<script>
+  if (!Auth.requireAuth("/?login=1")) throw new Error("auth");
+
+  const $ = (id) => document.getElementById(id);
+
+  function alertBox(msg, ok = true) {
+    const el = $("profile-alert");
+    el.classList.remove("hidden");
+    el.textContent = msg;
+    el.className =
+      "mb-4 px-4 py-3 rounded-xl text-sm border " +
+      (ok
+        ? "bg-primary-container/40 border-primary text-on-primary-container"
+        : "bg-red-50 border-red-200 text-error");
+  }
+
+  function fill(user) {
+    $("field-name").value = user.name || "";
+    $("field-username").value = user.username || "";
+    $("current-email").textContent = user.email || "—";
+    if (window.ProfileMenu) ProfileMenu.paintAll();
+  }
+
+  async function load() {
+    const user = await LI.me();
+    Auth.setUser(user);
+    fill(user);
+  }
+
+  $("form-name").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const user = await LI.updateProfile({ name: $("field-name").value.trim() });
+      Auth.setUser(user);
+      fill(user);
+      alertBox("İsim güncellendi");
+    } catch (err) {
+      alertBox(err.message || "Hata", false);
+    }
+  });
+
+  $("form-username").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const user = await LI.updateProfile({ username: $("field-username").value.trim() });
+      Auth.setUser(user);
+      fill(user);
+      alertBox("Kullanıcı adı güncellendi");
+    } catch (err) {
+      alertBox(err.message || "Hata", false);
+    }
+  });
+
+  const sec = {
+    purpose: null,
+    code: "",
+    open(purpose) {
+      this.purpose = purpose;
+      this.code = "";
+      $("sec-error").classList.add("hidden");
+      $("sec-hint").classList.add("hidden");
+      $("sec-code").value = "";
+      $("sec-new-email").value = "";
+      $("sec-new-password").value = "";
+      $("sec-new-password2").value = "";
+      $("sec-title").textContent = purpose === "email_change" ? "E-posta değiştir" : "Şifre değiştir";
+      $("sec-subtitle").textContent = "Önce e-postana gelen aktivasyon kodunu gir.";
+      this.showStep("request");
+      $("sec-modal").classList.add("is-open");
+      $("sec-modal").setAttribute("aria-hidden", "false");
+    },
+    close() {
+      $("sec-modal").classList.remove("is-open");
+      $("sec-modal").setAttribute("aria-hidden", "true");
+      this.purpose = null;
+      this.code = "";
+    },
+    showStep(step) {
+      $("sec-step-request").classList.toggle("hidden", step !== "request");
+      $("sec-step-code").classList.toggle("hidden", step !== "code");
+      $("sec-step-new").classList.toggle("hidden", step !== "new");
+      if (step === "new") {
+        const isEmail = this.purpose === "email_change";
+        $("sec-new-email-wrap").classList.toggle("hidden", !isEmail);
+        $("sec-new-password-wrap").classList.toggle("hidden", isEmail);
+        $("sec-subtitle").textContent = isEmail
+          ? "Kod doğrulandı. Yeni e-postanı gir."
+          : "Kod doğrulandı. Yeni şifreni gir.";
+      }
+    },
+    err(msg) {
+      const el = $("sec-error");
+      el.textContent = msg || "Hata";
+      el.classList.remove("hidden");
+    },
+    clearErr() {
+      $("sec-error").classList.add("hidden");
+    },
+    async sendCode() {
+      this.clearErr();
+      try {
+        const res = await LI.requestSecurityCode(this.purpose);
+        $("sec-hint").textContent = res.email_hint
+          ? `Kod ${res.email_hint} adresine gönderildi.`
+          : "Kod e-postana gönderildi.";
+        if (res.dev_code) {
+          $("sec-hint").textContent += ` (Geliştirme kodu: ${res.dev_code})`;
+        }
+        $("sec-hint").classList.remove("hidden");
+        this.showStep("code");
+        $("sec-code").focus();
+      } catch (e) {
+        this.err(e.message);
+      }
+    },
+    async verify() {
+      this.clearErr();
+      const code = $("sec-code").value.trim();
+      if (code.length < 4) {
+        this.err("Kodu gir");
+        return;
+      }
+      try {
+        await LI.verifySecurityCode(this.purpose, code);
+        this.code = code;
+        this.showStep("new");
+        if (this.purpose === "email_change") $("sec-new-email").focus();
+        else $("sec-new-password").focus();
+      } catch (e) {
+        this.err(e.message);
+      }
+    },
+    async confirm() {
+      this.clearErr();
+      try {
+        if (this.purpose === "email_change") {
+          const email = $("sec-new-email").value.trim();
+          if (!email) {
+            this.err("Yeni e-posta gerekli");
+            return;
+          }
+          const data = await LI.confirmEmailChange(this.code, email);
+          if (data.access_token) Auth.setSession(data.access_token, data.user);
+          else Auth.setUser(data.user || data);
+          fill(Auth.user);
+          this.close();
+          alertBox("E-posta güncellendi");
+        } else {
+          const a = $("sec-new-password").value;
+          const b = $("sec-new-password2").value;
+          if (a.length < 6) {
+            this.err("Şifre en az 6 karakter olmalı");
+            return;
+          }
+          if (a !== b) {
+            this.err("Yeni şifreler eşleşmiyor");
+            return;
+          }
+          await LI.confirmPasswordChange(this.code, a);
+          this.close();
+          alertBox("Şifre güncellendi");
+        }
+      } catch (e) {
+        this.err(e.message);
+      }
+    },
+  };
+
+  $("btn-change-email").onclick = () => sec.open("email_change");
+  $("btn-change-password").onclick = () => sec.open("password_change");
+  $("sec-close").onclick = () => sec.close();
+  $("sec-modal").addEventListener("click", (e) => {
+    if (e.target.id === "sec-modal") sec.close();
+  });
+  $("sec-send").onclick = () => sec.sendCode();
+  $("sec-resend").onclick = () => sec.sendCode();
+  $("sec-verify").onclick = () => sec.verify();
+  $("sec-confirm").onclick = () => sec.confirm();
+  $("sec-code").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sec.verify();
+  });
+
+  load().catch((err) => alertBox(err.message || "Profil yüklenemedi", false));
+</script>
+</body>
+</html>

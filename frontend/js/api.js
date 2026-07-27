@@ -26,6 +26,9 @@ const Auth = {
     localStorage.setItem(this.tokenKey, token);
     localStorage.setItem(this.userKey, JSON.stringify(user));
   },
+  setUser(user) {
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+  },
   setSessionId(id) {
     if (id == null) localStorage.removeItem(this.sessionKey);
     else localStorage.setItem(this.sessionKey, String(id));
@@ -37,6 +40,18 @@ const Auth = {
   },
   isLoggedIn() {
     return Boolean(this.token);
+  },
+  initial() {
+    const u = this.user;
+    const src = (u?.name || u?.username || u?.email || "U").trim();
+    return (src[0] || "U").toUpperCase();
+  },
+  avatarSrc(user = this.user) {
+    if (!user) return null;
+    if (user.avatar_type === "image" && user.avatar_value) {
+      return `${API_BASE}/media/avatars/${encodeURIComponent(user.avatar_value)}`;
+    }
+    return null;
   },
   requireAuth(redirectTo = "/") {
     if (!this.isLoggedIn()) {
@@ -51,6 +66,26 @@ const Auth = {
       window.location.href = redirectTo;
       return false;
     }
+    return true;
+  },
+  async consumeOAuthHandoff() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("oauth_token");
+    if (!token) return false;
+    localStorage.setItem(this.tokenKey, token);
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await fetch(`${API_BASE}/auth/me`, { headers });
+      if (!res.ok) throw new Error("OAuth oturumu kurulamadi");
+      const user = await res.json();
+      this.setSession(token, user);
+    } catch {
+      this.clear();
+      return false;
+    }
+    params.delete("oauth_token");
+    const qs = params.toString();
+    history.replaceState({}, "", `${location.pathname}${qs ? `?${qs}` : ""}${location.hash}`);
     return true;
   },
 };
@@ -91,7 +126,68 @@ const LI = {
     api("/auth/register", { method: "POST", body: JSON.stringify({ email, password, name }), skipSession: true }),
   login: (email, password) =>
     api("/auth/login", { method: "POST", body: JSON.stringify({ email, password }), skipSession: true }),
+  oauthProviders: () => api("/auth/oauth/providers", { skipSession: true }),
+  oauthStartUrl: (provider) => `${API_BASE}/auth/oauth/${encodeURIComponent(provider)}/start`,
   me: () => api("/auth/me", { skipSession: true }),
+  updateProfile: (payload) =>
+    api("/auth/profile", { method: "PATCH", body: JSON.stringify(payload), skipSession: true }),
+  requestSecurityCode: (purpose) =>
+    api("/auth/security/request-code", {
+      method: "POST",
+      body: JSON.stringify({ purpose }),
+      skipSession: true,
+    }),
+  verifySecurityCode: (purpose, code) =>
+    api("/auth/security/verify-code", {
+      method: "POST",
+      body: JSON.stringify({ purpose, code }),
+      skipSession: true,
+    }),
+  confirmEmailChange: (code, new_email) =>
+    api("/auth/security/confirm-email", {
+      method: "POST",
+      body: JSON.stringify({ code, new_email }),
+      skipSession: true,
+    }),
+  confirmPasswordChange: (code, new_password) =>
+    api("/auth/security/confirm-password", {
+      method: "POST",
+      body: JSON.stringify({ code, new_password }),
+      skipSession: true,
+    }),
+  forgotPassword: (identifier) =>
+    api("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ identifier }),
+      skipSession: true,
+    }),
+  verifyResetCode: (identifier, code) =>
+    api("/auth/reset-password/verify", {
+      method: "POST",
+      body: JSON.stringify({ identifier, code }),
+      skipSession: true,
+    }),
+  resetPassword: (identifier, code, new_password) =>
+    api("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ identifier, code, new_password }),
+      skipSession: true,
+    }),
+  changePassword: (old_password, new_password) =>
+    api("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ old_password, new_password }),
+      skipSession: true,
+    }),
+  uploadAvatar: (file) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return api("/auth/avatar", { method: "POST", body: fd, skipSession: true });
+  },
+  setAvatarIcon: (icon) =>
+    api("/auth/avatar/icon", { method: "POST", body: JSON.stringify({ icon }), skipSession: true }),
+  clearAvatar: () => api("/auth/avatar", { method: "DELETE", skipSession: true }),
+  avatarIcons: () => api("/auth/avatar-icons", { skipSession: true }),
   sessions: () => api("/sessions", { skipSession: true }),
   sessionCreate: (payload) =>
     api("/sessions", { method: "POST", body: JSON.stringify(payload), skipSession: true }),
@@ -109,9 +205,37 @@ const LI = {
   compile: (id) => api(`/documents/${id}/compile`, { method: "POST" }),
   job: (id) => api(`/pipeline/jobs/${id}`),
   compiledNote: (id) => api(`/documents/${id}/compiled-note`),
+  downloadCompiledNote: async (id, { format = "docx", kind = "note" } = {}) => {
+    const q = new URLSearchParams({ format, kind });
+    const res = await fetch(
+      `${API_BASE}/documents/${id}/compiled-note/download?${q}`,
+      { headers: { Authorization: `Bearer ${Auth.token}`, "X-Session-Id": String(Auth.sessionId || "") } }
+    );
+    if (!res.ok) {
+      let detail = "Indirme basarisiz";
+      try {
+        const data = await res.json();
+        detail = data?.detail || detail;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    }
+    const blob = await res.blob();
+    const dispo = res.headers.get("Content-Disposition") || "";
+    const match = /filename=\"?([^\";]+)\"?/i.exec(dispo);
+    const filename = match?.[1] || `betula_${id}.${format}`;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  },
   conversations: () => api("/conversations"),
   createConversation: (title) =>
     api("/conversations", { method: "POST", body: JSON.stringify({ title }) }),
+  deleteConversation: (id) =>
+    api(`/conversations/${id}`, { method: "DELETE", skipSession: false }),
   messages: (id) => api(`/conversations/${id}/messages`),
   chat: (payload) =>
     api("/chat/completions", { method: "POST", body: JSON.stringify(payload) }),
@@ -166,6 +290,7 @@ const LI = {
           continue;
         }
         if (event === "meta" && handlers.onMeta) handlers.onMeta(data);
+        else if (event === "status" && handlers.onStatus) handlers.onStatus(data.text || "");
         else if (event === "token" && handlers.onToken) handlers.onToken(data.text || "");
         else if (event === "error" && handlers.onError) handlers.onError(data.detail || "Stream hatası");
         else if (event === "done") {

@@ -459,9 +459,78 @@ def init_db():
         conn.execute('CREATE INDEX IF NOT EXISTS idx_study_sessions_user ON study_sessions(user_id)')
 
         _ensure_session_columns(conn)
+        _ensure_user_profile_columns(conn)
+        _ensure_security_codes_table(conn)
         _backfill_default_sessions(conn)
 
         conn.commit()
+
+
+def _ensure_security_codes_table(conn):
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS security_codes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            purpose TEXT NOT NULL,
+            code_hash TEXT NOT NULL,
+            attempts INTEGER DEFAULT 0,
+            expires_at DATETIME NOT NULL,
+            consumed_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_security_codes_user_purpose ON security_codes(user_id, purpose)"
+    )
+
+
+def _ensure_user_profile_columns(conn):
+    """users tablosuna username / avatar / oauth alanlarini ekler."""
+    try:
+        cols = {c[1] for c in conn.execute("PRAGMA table_info(users)").fetchall()}
+        if "username" not in cols:
+            conn.execute("ALTER TABLE users ADD COLUMN username TEXT")
+        if "avatar_type" not in cols:
+            conn.execute("ALTER TABLE users ADD COLUMN avatar_type TEXT DEFAULT 'default'")
+        if "avatar_value" not in cols:
+            conn.execute("ALTER TABLE users ADD COLUMN avatar_value TEXT")
+        if "oauth_provider" not in cols:
+            conn.execute("ALTER TABLE users ADD COLUMN oauth_provider TEXT")
+        if "oauth_subject" not in cols:
+            conn.execute("ALTER TABLE users ADD COLUMN oauth_subject TEXT")
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)"
+        )
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_oauth "
+            "ON users(oauth_provider, oauth_subject) "
+            "WHERE oauth_provider IS NOT NULL AND oauth_subject IS NOT NULL"
+        )
+        # Mevcut kullanicilara benzersiz username ata
+        rows = conn.execute(
+            "SELECT id, email FROM users WHERE username IS NULL OR username = ''"
+        ).fetchall()
+        for uid, email in rows:
+            base = "".join(
+                ch for ch in (email or f"user{uid}").split("@")[0].lower() if ch.isalnum() or ch == "_"
+            )[:20] or f"user{uid}"
+            candidate = base
+            n = 0
+            while True:
+                taken = conn.execute(
+                    "SELECT 1 FROM users WHERE username = ? AND id != ?",
+                    (candidate, uid),
+                ).fetchone()
+                if not taken:
+                    break
+                n += 1
+                candidate = f"{base}{n}"
+            conn.execute("UPDATE users SET username = ? WHERE id = ?", (candidate, uid))
+    except Exception as e:
+        print(f"user profile migration warning: {e}")
 
 
 def _ensure_session_columns(conn):

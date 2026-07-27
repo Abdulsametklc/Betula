@@ -1,0 +1,19 @@
+services:
+  betula:
+    build: .
+    ports:
+      - "${PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      PORT: "8000"
+      DATABASE_PATH: /data/LocalInsights.db
+      UPLOADS_ROOT: /data/uploads
+      VECTORSTORE_ROOT: /data/vectorstore
+      DEBUG: "${DEBUG:-false}"
+    volumes:
+      - betula_data:/data
+    restart: unless-stopped
+
+volumes:
+  betula_data:

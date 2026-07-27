@@ -87,6 +87,44 @@ def workspace():
     return FileResponse(FRONTEND_DIR / "index.html")
 
 
+@app.get("/sifre-sifirla")
+@app.get("/reset-password")
+def reset_password_page():
+    """Deep-link from reset emails → home with forgot-password flow open."""
+    from fastapi.responses import RedirectResponse
+
+    return RedirectResponse(url="/?reset=1", status_code=302)
+
+
+@app.get("/hesap")
+@app.get("/profile")
+def profile_page():
+    page = FRONTEND_DIR / "profile.html"
+    if page.exists():
+        return FileResponse(page)
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/hakkinda")
+@app.get("/about")
+def about_page():
+    page = FRONTEND_DIR / "about.html"
+    if page.exists():
+        return FileResponse(page)
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/media/avatars/{filename}")
+def serve_avatar(filename: str):
+    safe = os.path.basename(filename)
+    path = Path(settings.uploads_root) / "avatars" / safe
+    if not path.is_file():
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="Avatar bulunamadi")
+    return FileResponse(path)
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "provider": "groq", "model": settings.groq_model}
