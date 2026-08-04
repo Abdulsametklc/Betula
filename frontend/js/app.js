@@ -946,7 +946,14 @@
   function formatDate(d) {
     if (!d) return "";
     try {
-      return new Date(d).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" });
+      // SQLite CURRENT_TIMESTAMP UTC (naive) → GMT+3 (Europe/Istanbul)
+      const raw = String(d).trim().replace(" ", "T");
+      const iso = /Z$|[+-]\d{2}:?\d{2}$/.test(raw) ? raw : `${raw}Z`;
+      return new Date(iso).toLocaleString("tr-TR", {
+        timeZone: "Europe/Istanbul",
+        dateStyle: "short",
+        timeStyle: "short",
+      });
     } catch {
       return String(d);
     }
@@ -1061,30 +1068,80 @@
 
   (function initMasterPanel() {
     const panel = $("master-panel");
+    const main = $("app-main");
     const toggle = $("master-toggle");
-    const closeBtn = $("btn-master-close");
     const icon = $("master-toggle-icon");
-    if (!panel || !toggle) return;
+    const resizer = $("master-resizer");
+    if (!panel || !toggle || !main) return;
 
-    const KEY = "betula_master_collapsed";
-    let collapsed = localStorage.getItem(KEY) === "1";
+    const KEY_W = "betula_master_w";
+    const KEY_C = "betula_master_collapsed";
+    const MIN = 260;
+    const MAX = 420;
+
+    let width = Number(localStorage.getItem(KEY_W)) || 320;
+    width = Math.min(MAX, Math.max(MIN, width));
+    let collapsed = localStorage.getItem(KEY_C) === "1";
 
     function apply() {
+      width = Math.min(MAX, Math.max(MIN, width));
+      // Açık genişlik her zaman ayrı tutulur; margin sınıf ile sıfırlanır
+      document.documentElement.style.setProperty("--master-panel-w", `${width}px`);
+      document.documentElement.style.setProperty("--master-w", collapsed ? "0px" : `${width}px`);
       panel.classList.toggle("is-collapsed", collapsed);
+      main.classList.toggle("is-master-collapsed", collapsed);
       toggle.classList.toggle("is-collapsed", collapsed);
       if (icon) icon.textContent = collapsed ? "chevron_left" : "chevron_right";
       toggle.title = collapsed ? "Master Sentez’i aç" : "Master Sentez’i kapat";
-      localStorage.setItem(KEY, collapsed ? "1" : "0");
+      localStorage.setItem(KEY_W, String(width));
+      localStorage.setItem(KEY_C, collapsed ? "1" : "0");
     }
 
-    function setCollapsed(v) {
-      collapsed = !!v;
-      apply();
-    }
-
-    toggle.addEventListener("click", () => setCollapsed(!collapsed));
-    closeBtn?.addEventListener("click", () => setCollapsed(true));
     apply();
+
+    toggle.addEventListener("click", () => {
+      collapsed = !collapsed;
+      apply();
+    });
+
+    if (resizer) {
+      let dragging = false;
+      const onMove = (e) => {
+        if (!dragging || collapsed) return;
+        const x = e.touches ? e.touches[0].clientX : e.clientX;
+        width = Math.min(MAX, Math.max(MIN, window.innerWidth - x));
+        document.documentElement.style.setProperty("--master-panel-w", `${width}px`);
+        document.documentElement.style.setProperty("--master-w", `${width}px`);
+      };
+      const onUp = () => {
+        if (!dragging) return;
+        dragging = false;
+        panel.classList.remove("is-resizing");
+        main.classList.remove("is-resizing");
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onUp);
+        apply();
+      };
+      const onDown = (e) => {
+        if (collapsed) return;
+        e.preventDefault();
+        dragging = true;
+        panel.classList.add("is-resizing");
+        main.classList.add("is-resizing");
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+        window.addEventListener("touchmove", onMove, { passive: false });
+        window.addEventListener("touchend", onUp);
+      };
+      resizer.addEventListener("pointerdown", onDown);
+      resizer.addEventListener("touchstart", onDown, { passive: false });
+    }
   })();
 
   $("btn-new-upload").onclick = () => $("file-input").click();

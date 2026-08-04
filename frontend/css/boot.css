@@ -1,0 +1,39 @@
+/* Betula boot — Material icon isimlerinin (FOUC) görünmesini engelle */
+
+html {
+  background: #fff8f6;
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined", sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.25em;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "liga";
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  speak: never;
+}
+
+/* Font yüklenene kadar ikon adı (rocket_launch vb.) görünmesin */
+html:not(.betula-fonts-ready) .material-symbols-outlined {
+  color: transparent !important;
+  max-width: 1.35em;
+  overflow: hidden;
+}
+
+/* JS kapalıysa ikonları yine göster */
+@media (scripting: none) {
+  .material-symbols-outlined {
+    color: inherit !important;
+    max-width: none;
+    overflow: visible;
+  }
+}

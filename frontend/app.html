@@ -4,10 +4,13 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Çalışma Alanı - Betula</title>
+<style>html:not(.betula-fonts-ready) .material-symbols-outlined{color:transparent!important;max-width:1.35em;overflow:hidden}.material-symbols-outlined{display:inline-block;line-height:1;font-size:1.25em;white-space:nowrap}</style>
 <link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<link rel="stylesheet" href="/static/css/boot.css"/>
 <link rel="stylesheet" href="/static/css/betula.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="/static/js/boot.js" defer></script>
 <style>
   body { background-color: #fff8f6; color: #231a14; margin: 0; overflow: hidden; }
   .glass-panel { background-color: #ffffff; border: 1px solid #d7c2b6; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -298,10 +301,17 @@
     --sidebar-w: 256px;
     --sidebar-min: 208px;
     --sidebar-max: 256px;
+    --master-panel-w: 320px;
+    --master-w: 320px; /* profil dock offset; kapalıyken 0 */
   }
   #app-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
     width: var(--sidebar-w);
-    transition: width 0.22s ease, transform 0.22s ease;
+    z-index: 40;
+    transition: width 0.22s ease;
   }
   #app-sidebar.is-collapsed {
     width: 0 !important;
@@ -317,20 +327,22 @@
   }
   #app-main {
     margin-left: 0;
-    transition: margin-left 0.22s ease;
-    padding-right: 5.5rem;
-  }
-  @media (max-width: 640px) {
-    #app-main {
-      padding-right: 4rem;
-    }
+    margin-right: 0;
+    width: 100%;
+    min-width: 0;
+    transition: margin-left 0.22s ease, margin-right 0.22s ease;
+    padding-right: 0;
   }
   @media (min-width: 768px) {
     #app-main {
       margin-left: var(--sidebar-w);
+      margin-right: var(--master-panel-w);
     }
     #app-main.is-sidebar-collapsed {
       margin-left: 0 !important;
+    }
+    #app-main.is-master-collapsed {
+      margin-right: 0 !important;
     }
   }
   #app-main.is-resizing {
@@ -388,60 +400,94 @@
     font-size: 18px;
   }
 
-  /* Master Sentez paneli */
-  .master-panel {
-    width: 20rem;
-    max-width: 40vw;
+  /* Sağ: Master Sentez — sabit panel; kapalıyken main margin sıfırlanır */
+  #master-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
     height: 100%;
-    flex-shrink: 0;
-    display: flex;
+    width: var(--master-panel-w);
+    z-index: 40;
+    display: none;
     flex-direction: column;
-    transition: width 0.28s ease, opacity 0.22s ease, margin 0.28s ease;
+    transition: width 0.22s ease;
     overflow: hidden;
   }
-  .master-panel.is-collapsed {
-    width: 0;
-    opacity: 0;
-    margin: 0;
+  @media (min-width: 768px) {
+    #master-panel { display: flex; }
+  }
+  #master-panel.is-collapsed {
+    width: 0 !important;
+    border-left-width: 0 !important;
     pointer-events: none;
   }
-  .master-panel-inner {
-    width: 20rem;
-    max-width: 40vw;
+  #master-panel.is-collapsed > *:not(#master-resizer) {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .master-resizer {
+    position: absolute;
+    top: 0;
+    left: -3px;
+    width: 6px;
     height: 100%;
-    min-height: 0;
+    cursor: col-resize;
+    z-index: 45;
+    touch-action: none;
+  }
+  .master-resizer:hover,
+  #master-panel.is-resizing .master-resizer {
+    background: rgba(194, 101, 42, 0.35);
+  }
+  #master-panel.is-collapsed .master-resizer {
+    display: none;
+  }
+  #master-panel.is-resizing {
+    transition: none !important;
   }
   .master-toggle {
     position: fixed;
-    right: 0;
     top: 50%;
-    transform: translateY(-50%);
-    z-index: 45;
-    width: 28px;
+    right: var(--master-w);
+    transform: translate(50%, -50%);
+    z-index: 46;
+    width: 22px;
     height: 56px;
-    border-radius: 999px 0 0 999px;
+    border-radius: 999px;
     border: 1px solid #d7c2b6;
-    border-right: none;
     background: #ffffff;
     color: #52443c;
-    display: inline-flex;
+    box-shadow: 0 4px 14px rgba(34, 26, 22, 0.12);
+    display: none;
     align-items: center;
     justify-content: center;
-    box-shadow: -2px 2px 10px rgba(34, 26, 22, 0.08);
-    transition: background 0.15s, color 0.15s;
+    transition: right 0.22s ease, background 0.15s, color 0.15s;
+  }
+  @media (min-width: 768px) {
+    .master-toggle { display: inline-flex; }
   }
   .master-toggle:hover {
     background: #ffdbcb;
     color: #c2652a;
   }
+  .master-toggle.is-collapsed {
+    right: 0;
+    transform: translate(0, -50%);
+    border-radius: 999px 0 0 999px;
+    width: 20px;
+  }
+  .master-toggle .material-symbols-outlined {
+    font-size: 18px;
+  }
   .workspace-split {
-    flex: 1;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: row;
     gap: 1rem;
     min-width: 0;
     min-height: 0;
     height: 100%;
+    width: 100%;
   }
   .workspace-split > .glass-panel {
     flex: 1 1 0;
@@ -462,9 +508,8 @@
 <body class="h-screen w-screen flex font-body-md text-body-md text-on-background bg-background">
 <input type="file" id="file-input" accept=".pdf,.docx,.doc" class="hidden"/>
 
-<!-- Sağ üst profil (Master toggle ile çakışmaz) -->
-<div class="app-profile-dock" id="app-profile-dock">
-  <span class="app-profile-name" data-profile-name></span>
+<!-- Sürüklenebilir profil (yalnızca foto) -->
+<div class="app-profile-dock" id="app-profile-dock" title="Profil — sürükleyerek taşı">
   <button type="button" data-profile-trigger data-profile-size="lg" title="Profil" data-profile-avatar>U</button>
 </div>
 
@@ -474,6 +519,35 @@
 <button type="button" id="master-toggle" class="master-toggle" title="Master Sentez paneli" aria-label="Master Sentez paneli">
   <span class="material-symbols-outlined" id="master-toggle-icon">chevron_right</span>
 </button>
+
+<aside id="master-panel" class="bg-surface-container-lowest border-l border-outline-variant shadow-sm overflow-hidden">
+  <div id="master-resizer" class="master-resizer" title="Genişliği ayarla" aria-hidden="true"></div>
+  <div class="p-4 border-b border-outline-variant flex items-center justify-between shrink-0">
+    <h2 class="font-label-sm text-label-sm text-primary uppercase tracking-widest flex items-center gap-2 font-semibold">
+      <span class="material-symbols-outlined text-[16px]">auto_awesome</span> Master Sentez
+    </h2>
+    <div id="export-master-wrap" class="relative hidden">
+      <button type="button" id="btn-download-note" class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container" title="İndir">
+        <span class="material-symbols-outlined text-[18px]">download</span>
+      </button>
+      <div id="export-master-menu" class="hidden absolute right-0 top-full mt-1 z-20 w-52 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl py-1 text-sm">
+        <p class="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wider text-on-surface-variant">Master Sentez</p>
+        <button type="button" data-export-master="note:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Sentez — Word</button>
+        <button type="button" data-export-master="note:pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">Sentez — PDF</button>
+        <p class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-on-surface-variant border-t border-outline-variant mt-1">Eksik bilgiler</p>
+        <button type="button" data-export-master="gaps:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Eksikler — Word</button>
+        <button type="button" data-export-master="gaps:pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">Eksikler — PDF</button>
+        <button type="button" data-export-master="full:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container border-t border-outline-variant mt-1">Hepsi — Word</button>
+      </div>
+    </div>
+  </div>
+  <div id="synthesis-list" class="p-4 flex-1 overflow-y-auto min-h-0">
+    <div class="text-[12px] text-on-surface-variant uppercase tracking-wider mb-3 pb-1 border-b border-outline-variant font-medium">Eksikler / Gaps</div>
+    <ul id="gap-list" class="space-y-3">
+      <li class="text-sm text-on-surface-variant">Henüz gap yok.</li>
+    </ul>
+  </div>
+</aside>
 
 <nav id="app-sidebar" class="fixed left-0 top-0 h-full z-40 bg-surface-container-lowest border-r border-outline-variant flex flex-col py-6 gap-3 hidden md:flex shadow-sm overflow-hidden">
   <div id="sidebar-resizer" class="sidebar-resizer" title="Genişliği ayarla" aria-hidden="true"></div>
@@ -569,9 +643,9 @@
               <span class="material-symbols-outlined text-[18px]">download</span>
             </button>
             <div id="export-note-menu" class="hidden absolute right-0 top-full mt-1 z-20 w-44 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl py-1 text-sm">
-              <button type="button" data-export-note="docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Word (.docx)</button>
-              <button type="button" data-export-note="pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">PDF (.pdf)</button>
-              <button type="button" data-export-note="md" class="w-full text-left px-3 py-2 hover:bg-surface-container">Markdown (.md)</button>
+              <button type="button" data-export-note="docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Word</button>
+              <button type="button" data-export-note="pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">PDF</button>
+              <button type="button" data-export-note="md" class="w-full text-left px-3 py-2 hover:bg-surface-container">Markdown</button>
             </div>
           </div>
           <button id="btn-compile" class="text-xs uppercase tracking-wider px-3 py-1 rounded-full border border-primary text-primary hover:bg-primary-container disabled:opacity-40" disabled>Derle</button>
@@ -619,42 +693,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Sağ: Master Sentez (açılır/kapanır) -->
-  <aside id="master-panel" class="master-panel" aria-label="Master Sentez">
-    <div class="master-panel-inner glass-panel rounded-lg flex flex-col overflow-hidden min-h-0 h-full">
-      <div class="p-4 border-b border-outline-variant flex items-center justify-between shrink-0">
-        <h2 class="font-label-sm text-label-sm text-primary uppercase tracking-widest flex items-center gap-2 font-semibold">
-          <span class="material-symbols-outlined text-[16px]">auto_awesome</span> Master Sentez
-        </h2>
-        <div class="flex items-center gap-1">
-          <div id="export-master-wrap" class="relative hidden">
-            <button type="button" id="btn-download-note" class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container" title="İndir">
-              <span class="material-symbols-outlined text-[18px]">download</span>
-            </button>
-            <div id="export-master-menu" class="hidden absolute right-0 top-full mt-1 z-20 w-52 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl py-1 text-sm">
-              <p class="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wider text-on-surface-variant">Master Sentez</p>
-              <button type="button" data-export-master="note:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Sentez — Word</button>
-              <button type="button" data-export-master="note:pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">Sentez — PDF</button>
-              <p class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-on-surface-variant border-t border-outline-variant mt-1">Eksik bilgiler</p>
-              <button type="button" data-export-master="gaps:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Eksikler — Word</button>
-              <button type="button" data-export-master="gaps:pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">Eksikler — PDF</button>
-              <button type="button" data-export-master="full:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container border-t border-outline-variant mt-1">Hepsi — Word</button>
-            </div>
-          </div>
-          <button type="button" id="btn-master-close" class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container" title="Kapat" aria-label="Master Sentez kapat">
-            <span class="material-symbols-outlined text-[18px]">close</span>
-          </button>
-        </div>
-      </div>
-      <div id="synthesis-list" class="p-4 flex-1 overflow-y-auto min-h-0">
-        <div class="text-[12px] text-on-surface-variant uppercase tracking-wider mb-3 pb-1 border-b border-outline-variant font-medium">Eksikler / Gaps</div>
-        <ul id="gap-list" class="space-y-3">
-          <li class="text-sm text-on-surface-variant">Henüz gap yok.</li>
-        </ul>
-      </div>
-    </div>
-  </aside>
 </main>
 
 <!-- Flashcards modal -->

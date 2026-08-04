@@ -4,10 +4,13 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Betula - Geleceğin Öğrenme Deneyimi</title>
+<style>html:not(.betula-fonts-ready) .material-symbols-outlined{color:transparent!important;max-width:1.35em;overflow:hidden}.material-symbols-outlined{display:inline-block;line-height:1;font-size:1.25em;white-space:nowrap}</style>
 <link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<link rel="stylesheet" href="/static/css/boot.css"/>
 <link rel="stylesheet" href="/static/css/betula.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
+<script src="/static/js/boot.js" defer></script>
 <style>
   body { background-color: #fff8f6; color: #221a16; overflow-x: hidden; }
   .glass-card {
@@ -15,9 +18,8 @@
     border: 1px solid #f4ded5;
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-    cursor: pointer;
   }
-  .glass-card:hover:not(.is-focused) {
+  .glass-card:hover {
     border-color: #c2652a;
     box-shadow: 0 10px 15px -3px rgba(194,101,42,0.1);
     transform: translateY(-5px);
@@ -63,30 +65,6 @@
   }
   .card-visual-pipeline .card-visual-veil {
     background: linear-gradient(to right, #fff8f6 0%, rgba(255,248,246,0.78) 42%, rgba(255,248,246,0.15) 100%);
-  }
-  .features-scrim {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    background: rgba(34, 26, 22, 0.42);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.28s ease;
-  }
-  body.card-focus-on .features-scrim {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .glass-card.is-focused {
-    position: relative;
-    z-index: 45;
-    transform: translateY(-8px) scale(1.03);
-    box-shadow:
-      0 28px 56px rgba(34, 26, 22, 0.28),
-      0 0 0 1px rgba(194, 101, 42, 0.35);
-    border-color: #c2652a;
   }
   .site-nav {
     position: fixed;
@@ -186,7 +164,6 @@
 </style>
 </head>
 <body class="antialiased selection:bg-primary-container selection:text-on-primary-container">
-<div id="features-scrim" class="features-scrim" aria-hidden="true"></div>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-brand">
@@ -244,7 +221,7 @@
     <p class="font-body-md text-body-md text-on-surface-variant mt-4">Hızlı öğrenme ve kalıcı hatırlama için araçlar.</p>
   </div>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[minmax(300px,auto)]" id="features-grid">
-    <div class="glass-card rounded-2xl p-8 md:col-span-2 relative overflow-hidden group fade-in-up delay-100" data-feature-card tabindex="0" role="button">
+    <div class="glass-card rounded-2xl p-8 md:col-span-2 relative overflow-hidden group fade-in-up delay-100">
       <div class="relative z-10 flex flex-col h-full justify-between">
         <div>
           <span class="material-symbols-outlined text-4xl text-primary mb-4" style="font-variation-settings: 'FILL' 1;">hub</span>
@@ -257,7 +234,7 @@
       <div class="absolute right-0 bottom-0 w-64 h-64 bg-gradient-to-tl from-primary-container/40 to-transparent rounded-tl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
     </div>
 
-    <div class="glass-card card-visual card-visual-fc rounded-2xl overflow-hidden relative group fade-in-up delay-200 min-h-[300px]" data-feature-card tabindex="0" role="button">
+    <div class="glass-card card-visual card-visual-fc rounded-2xl overflow-hidden relative group fade-in-up delay-200 min-h-[300px]">
       <div class="card-visual-bg" aria-hidden="true"></div>
       <div class="card-visual-veil" aria-hidden="true"></div>
       <div class="relative z-10 p-8 h-full flex flex-col justify-end">
@@ -269,7 +246,7 @@
       </div>
     </div>
 
-    <div class="glass-card rounded-2xl p-8 relative overflow-hidden group fade-in-up delay-300 min-h-[300px]" data-feature-card tabindex="0" role="button">
+    <div class="glass-card rounded-2xl p-8 relative overflow-hidden group fade-in-up delay-300 min-h-[300px]">
       <div class="relative z-10 flex flex-col h-full justify-end">
         <span class="material-symbols-outlined text-3xl text-tertiary mb-3" style="font-variation-settings: 'FILL' 1;">memory</span>
         <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Kişisel Hafıza</h3>
@@ -280,7 +257,7 @@
       <div class="absolute right-0 bottom-0 w-48 h-48 bg-gradient-to-tl from-tertiary/20 to-transparent rounded-tl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
     </div>
 
-    <div class="glass-card card-visual card-visual-pipeline rounded-2xl overflow-hidden md:col-span-2 relative group fade-in-up delay-300 min-h-[300px]" data-feature-card tabindex="0" role="button">
+    <div class="glass-card card-visual card-visual-pipeline rounded-2xl overflow-hidden md:col-span-2 relative group fade-in-up delay-300 min-h-[300px]">
       <div class="card-visual-bg" aria-hidden="true"></div>
       <div class="card-visual-veil" aria-hidden="true"></div>
       <div class="relative z-10 p-8 h-full flex flex-col justify-center max-w-lg">
@@ -526,48 +503,6 @@
 
   refreshUserUI();
   if (new URLSearchParams(location.search).get("login") === "1") openAuth("login");
-
-  (function initFeatureCardFocus() {
-    const cards = Array.from(document.querySelectorAll("[data-feature-card]"));
-    const scrim = document.getElementById("features-scrim");
-    let active = null;
-
-    function clearFocus() {
-      if (active) active.classList.remove("is-focused");
-      active = null;
-      document.body.classList.remove("card-focus-on");
-      if (scrim) scrim.setAttribute("aria-hidden", "true");
-    }
-
-    function focusCard(card) {
-      if (active === card) {
-        clearFocus();
-        return;
-      }
-      if (active) active.classList.remove("is-focused");
-      active = card;
-      card.classList.add("is-focused");
-      document.body.classList.add("card-focus-on");
-      if (scrim) scrim.setAttribute("aria-hidden", "false");
-    }
-
-    cards.forEach((card) => {
-      card.addEventListener("click", (e) => {
-        if (e.target.closest("button, a")) return;
-        focusCard(card);
-      });
-      card.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          focusCard(card);
-        }
-      });
-    });
-    scrim?.addEventListener("click", clearFocus);
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") clearFocus();
-    });
-  })();
 </script>
 </body>
 </html>

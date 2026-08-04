@@ -78,8 +78,5 @@ def sessions_touch(session_id: int, user: CurrentUser):
 def sessions_delete(session_id: int, user: CurrentUser):
     ok = delete_session(session_id, user_id=user["id"])
     if not ok:
-        raise HTTPException(
-            status_code=400,
-            detail="Oturum silinemedi. En az bir aktif oturum kalmalı.",
-        )
+        raise HTTPException(status_code=404, detail="Oturum bulunamadi veya zaten silinmis")
     return {"ok": True}

@@ -169,12 +169,15 @@ def node_web_research(state: PipelineState) -> PipelineState:
     _set_step(state, "web_research")
     settings = get_settings()
 
-    gaps = (state.get("gaps") or [])[: settings.max_web_searches]
+    # Her gap araştırılsın — max_gaps ile max_web_searches uyumsuzsa eksik özet kalmasın
+    limit = max(1, min(settings.max_gaps, settings.max_web_searches))
+    gaps = (state.get("gaps") or [])[:limit]
     if not gaps:
-        return {**state, "research": [], "sources": []}
+        return {**state, "research": [], "sources": [], "gaps": []}
 
     research: list[dict[str, Any]] = [None] * len(gaps)  # type: ignore[list-item]
-    workers = min(len(gaps), settings.max_web_searches, 4)
+    # Groq TPM için paralelizmi sınırlı tut; yine de tüm gap'ler tamamlanır
+    workers = min(len(gaps), 3)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         future_map = {pool.submit(_research_one_gap, gap): i for i, gap in enumerate(gaps)}
@@ -194,9 +197,12 @@ def node_web_research(state: PipelineState) -> PipelineState:
 
     sources: list[dict[str, Any]] = []
     for item in research:
+        if not item:
+            continue
         sources.extend(item.get("sources") or [])
 
-    return {**state, "research": research, "sources": sources}
+    # UI'da yalnızca araştırılan gap'ler görünsün (araştırılmayan boş başlık kalmasın)
+    return {**state, "gaps": gaps, "research": research, "sources": sources}
 
 
 def node_synthesis(state: PipelineState) -> PipelineState:

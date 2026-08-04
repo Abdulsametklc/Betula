@@ -87,14 +87,8 @@ def touch_session(session_id: int, *, user_id: int) -> None:
 
 @require_user_id
 def delete_session(session_id: int, *, user_id: int) -> bool:
-    """Soft-delete. En az bir aktif oturum kalmali."""
+    """Soft-delete. Son aktif oturum da silinebilir."""
     with get_db() as conn:
-        count = conn.execute(
-            "SELECT COUNT(*) FROM study_sessions WHERE user_id = ? AND is_active = 1",
-            (user_id,),
-        ).fetchone()[0]
-        if count <= 1:
-            return False
         cursor = conn.execute(
             """UPDATE study_sessions SET is_active = 0, updated_at = datetime('now')
                WHERE id = ? AND user_id = ? AND is_active = 1""",

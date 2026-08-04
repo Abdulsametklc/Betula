@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import re
 from typing import Any
 
@@ -128,46 +129,190 @@ def gaps_to_docx(gaps: list[dict], *, title: str = "Eksik Bilgiler") -> bytes:
     return buf.getvalue()
 
 
-def _pdf_write_wrapped(page, text: str, *, x: float, y: float, width: float, fontsize: float = 11) -> float:
-    """Write wrapped text; returns next y."""
-    if not text:
-        return y
-    # PyMuPDF insert_textbox
-    rect = fitz.Rect(x, y, x + width, y + 700)
-    rc = page.insert_textbox(
-        rect,
-        text,
-        fontsize=fontsize,
-        fontname="helv",
-        align=0,
-    )
-    # rc is unused height leftover (negative if overflow). Approximate advance:
-    lines = max(1, text.count("\n") + 1)
-    return y + lines * (fontsize + 4) + 6
+_PDF_FONT_FILE: str | None = None
+_PDF_FONT_CACHE: fitz.Font | None = None
+_PDF_FONTNAME = "betula-tr"
+
+
+def _resolve_pdf_fontfile() -> str | None:
+    """Turkce destekli TTF bul (Windows / Linux)."""
+    candidates = [
+        # Windows
+        r"C:\Windows\Fonts\arial.ttf",
+        r"C:\Windows\Fonts\segoeui.ttf",
+        r"C:\Windows\Fonts\calibri.ttf",
+        r"C:\Windows\Fonts\tahoma.ttf",
+        # Linux common
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        # macOS
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/Library/Fonts/Arial.ttf",
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+    return None
+
+
+def _pdf_font() -> fitz.Font:
+    global _PDF_FONT_FILE, _PDF_FONT_CACHE
+    if _PDF_FONT_CACHE is not None:
+        return _PDF_FONT_CACHE
+    _PDF_FONT_FILE = _resolve_pdf_fontfile()
+    if _PDF_FONT_FILE:
+        _PDF_FONT_CACHE = fitz.Font(fontfile=_PDF_FONT_FILE)
+    else:
+        _PDF_FONT_CACHE = fitz.Font("helv")
+    return _PDF_FONT_CACHE
+
+
+def _pdf_ensure_page_font(page: fitz.Page) -> str:
+    """Sayfaya Unicode fontu gom; kullanilacak font adini dondur."""
+    global _PDF_FONT_FILE
+    if _PDF_FONT_FILE is None:
+        _PDF_FONT_FILE = _resolve_pdf_fontfile()
+    if _PDF_FONT_FILE:
+        try:
+            page.insert_font(fontname=_PDF_FONTNAME, fontfile=_PDF_FONT_FILE)
+            return _PDF_FONTNAME
+        except Exception:
+            pass
+    return "helv"
+
+
+def _wrap_text_lines(text: str, *, width: float, fontsize: float) -> list[str]:
+    """Kelime kaydirarak satir listesi uret."""
+    text = (text or "").replace("\r\n", "\n").replace("\r", "\n")
+    font = _pdf_font()
+    out: list[str] = []
+
+    for para in text.split("\n"):
+        raw = para.strip()
+        if not raw:
+            out.append("")
+            continue
+        words = raw.split()
+        if not words:
+            out.append("")
+            continue
+        current = words[0]
+        for word in words[1:]:
+            trial = f"{current} {word}"
+            if font.text_length(trial, fontsize=fontsize) <= width:
+                current = trial
+            else:
+                out.append(current)
+                current = word
+                while font.text_length(current, fontsize=fontsize) > width and len(current) > 1:
+                    cut = max(1, int(len(current) * width / max(font.text_length(current, fontsize=fontsize), 1)))
+                    out.append(current[:cut])
+                    current = current[cut:]
+        out.append(current)
+    return out
+
+
+def _pdf_draw_lines(
+    doc: fitz.Document,
+    page: fitz.Page,
+    lines: list[str],
+    *,
+    x: float,
+    y: float,
+    width: float,
+    fontsize: float,
+    margin: float,
+    page_bottom: float,
+    line_gap: float = 1.35,
+    para_gap: float = 6.0,
+) -> tuple[fitz.Page, float]:
+    """Satirlari ust uste binmeden yazar; gerekirse yeni sayfa acar."""
+    fontname = _pdf_ensure_page_font(page)
+    line_h = fontsize * line_gap
+    for line in lines:
+        if line == "":
+            y += para_gap * 0.6
+            continue
+        if y + line_h > page_bottom:
+            page = doc.new_page(width=595, height=842)
+            fontname = _pdf_ensure_page_font(page)
+            y = margin
+        page.insert_text(
+            (x, y + fontsize * 0.85),
+            line,
+            fontsize=fontsize,
+            fontname=fontname,
+            color=(0.14, 0.1, 0.08),
+        )
+        y += line_h
+    return page, y + para_gap
 
 
 def markdown_to_pdf(markdown: str, *, title: str = "Betula Notu") -> bytes:
+    # Font onbellegini hazirla
+    _pdf_font()
+
     doc = fitz.open()
     page = doc.new_page(width=595, height=842)  # A4
     margin = 50
     width = 595 - 2 * margin
+    page_bottom = 842 - margin
     y = margin
 
-    y = _pdf_write_wrapped(page, title, x=margin, y=y, width=width, fontsize=18) + 8
+    title_lines = _wrap_text_lines(title, width=width, fontsize=18)
+    page, y = _pdf_draw_lines(
+        doc, page, title_lines, x=margin, y=y, width=width, fontsize=18, margin=margin, page_bottom=page_bottom, para_gap=14
+    )
 
+    in_code = False
     for raw in _md_lines(markdown):
         line = raw.rstrip()
-        if not line.strip() or line.startswith("```"):
+        if line.startswith("```"):
+            in_code = not in_code
             continue
-        # Strip simple markdown markers for PDF
-        clean = re.sub(r"\*\*([^*]+)\*\*", r"\1", line)
-        clean = re.sub(r"^#+\s*", "", clean)
-        clean = re.sub(r"^[-*]\s+", "• ", clean)
-        if y > 780:
-            page = doc.new_page(width=595, height=842)
-            y = margin
-        size = 14 if line.startswith("# ") else 12 if line.startswith("## ") else 11
-        y = _pdf_write_wrapped(page, clean, x=margin, y=y, width=width, fontsize=size)
+        if in_code:
+            clean = line
+            size = 9
+        else:
+            if not line.strip():
+                y += 8
+                continue
+            clean = re.sub(r"\*\*([^*]+)\*\*", r"\1", line)
+            clean = re.sub(r"`([^`]+)`", r"\1", clean)
+            if re.match(r"^#\s+", clean):
+                clean = re.sub(r"^#\s+", "", clean)
+                size = 16
+                y += 6
+            elif re.match(r"^##\s+", clean):
+                clean = re.sub(r"^##\s+", "", clean)
+                size = 13
+                y += 4
+            elif re.match(r"^###\s+", clean):
+                clean = re.sub(r"^###\s+", "", clean)
+                size = 12
+                y += 2
+            elif re.match(r"^[-*]\s+", clean):
+                clean = "• " + re.sub(r"^[-*]\s+", "", clean)
+                size = 11
+            elif re.match(r"^\d+\.\s+", clean):
+                size = 11
+            else:
+                size = 11
+
+        wrapped = _wrap_text_lines(clean, width=width, fontsize=size)
+        page, y = _pdf_draw_lines(
+            doc,
+            page,
+            wrapped,
+            x=margin,
+            y=y,
+            width=width,
+            fontsize=size,
+            margin=margin,
+            page_bottom=page_bottom,
+            para_gap=5 if size >= 12 else 4,
+        )
 
     out = io.BytesIO()
     doc.save(out)
@@ -176,21 +321,32 @@ def markdown_to_pdf(markdown: str, *, title: str = "Betula Notu") -> bytes:
 
 
 def gaps_to_pdf(gaps: list[dict], *, title: str = "Eksik Bilgiler") -> bytes:
-    blocks: list[str] = [title, ""]
+    blocks: list[str] = []
     if not gaps:
-        blocks.append("Henuz eksik bilgi kaydi yok.")
+        blocks.append("Henüz eksik bilgi kaydı yok.")
     else:
         for i, g in enumerate(gaps, 1):
-            blocks.append(f"{i}. {(g.get('topic') or 'Konu').strip()}")
+            blocks.append(f"## {i}. {(g.get('topic') or 'Konu').strip()}")
             if g.get("reason"):
-                blocks.append(f"Neden: {g['reason']}")
+                blocks.append(f"**Neden:** {g['reason']}")
             if g.get("summary"):
-                blocks.append(f"Ozet: {g['summary']}")
-            for s in g.get("sources") or []:
-                if isinstance(s, dict) and s.get("href"):
+                blocks.append(str(g["summary"]))
+            sources = [s for s in (g.get("sources") or []) if isinstance(s, dict) and s.get("href")]
+            if sources:
+                blocks.append("Kaynaklar:")
+                for s in sources:
                     blocks.append(f"- {s.get('title') or s['href']}: {s['href']}")
             blocks.append("")
     return markdown_to_pdf("\n\n".join(blocks), title=title)
+
+
+def _safe_filename_base(title: str | None, fallback: str = "betula_note") -> str:
+    """HTTP Content-Disposition icin ASCII-guvenli dosya adi uret."""
+    raw = (title or fallback).strip() or fallback
+    # Turkce/unicode karakterler header'da latin-1 hatasi verir
+    ascii_only = raw.encode("ascii", "ignore").decode("ascii")
+    cleaned = re.sub(r"[^\w\-]+", "_", ascii_only).strip("_")
+    return (cleaned or fallback)[:60]
 
 
 def build_export(
@@ -209,7 +365,7 @@ def build_export(
     fmt = (fmt or "docx").lower()
     gaps = _parse_gaps(note)
     md = note.get("markdown") or ""
-    base = re.sub(r"[^\w\-]+", "_", (doc_title or f"betula_{note.get('document_id') or 'note'}") )[:60]
+    base = _safe_filename_base(doc_title, f"betula_{note.get('document_id') or 'note'}")
 
     if kind == "gaps":
         title = "Eksik Bilgiler — Betula"

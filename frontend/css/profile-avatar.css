@@ -118,39 +118,56 @@
   display: block;
 }
 
-/* Çalışma alanı — sağ üst yüzen profil chip */
+/* Çalışma alanı — sürüklenen profil (yalnızca foto) */
 .app-profile-dock {
   position: fixed;
   top: 1rem;
-  right: 1.15rem;
+  right: calc(var(--master-w, 0px) + 1.15rem);
+  left: auto;
   z-index: 48;
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.35rem 0.55rem 0.35rem 0.75rem;
+  justify-content: center;
+  padding: 0.28rem;
   border-radius: 9999px;
-  background: rgba(255, 248, 246, 0.88);
+  background: rgba(255, 248, 246, 0.9);
   border: 1px solid rgba(215, 194, 185, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 10px 28px rgba(34, 26, 22, 0.1);
-  max-width: min(240px, calc(100vw - 2rem));
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: box-shadow 0.15s ease;
+}
+
+.app-profile-dock.is-dragging {
+  cursor: grabbing;
+  box-shadow: 0 16px 36px rgba(34, 26, 22, 0.18);
+  transition: none;
+}
+
+.app-profile-dock.is-placed {
+  right: auto;
 }
 
 .app-profile-dock .app-profile-name {
-  font-size: 0.78rem;
-  color: #52443c;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 7.5rem;
+  display: none !important;
+}
+
+.app-profile-dock .profile-avatar-host,
+.app-profile-dock [data-profile-trigger] {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 @media (max-width: 640px) {
-  .app-profile-dock .app-profile-name { display: none; }
   .app-profile-dock {
-    padding: 0.3rem;
-    right: 0.75rem;
+    padding: 0.22rem;
     top: 0.75rem;
+    right: 0.75rem;
+  }
+  .app-profile-dock.is-placed {
+    right: auto;
   }
 }

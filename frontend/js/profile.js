@@ -548,11 +548,145 @@
     document.head.appendChild(link);
   }
 
+  function enableDockDrag() {
+    const dock = document.getElementById("app-profile-dock");
+    if (!dock || dock._dragBound) return;
+    dock._dragBound = true;
+
+    const KEY = "betula_profile_dock_pos";
+    const THRESHOLD = 10;
+    let startX = 0;
+    let startY = 0;
+    let originLeft = 0;
+    let originTop = 0;
+    let tracking = false;
+    let moved = false;
+    let pointerId = null;
+
+    function clamp(left, top) {
+      const pad = 8;
+      const w = dock.offsetWidth || 56;
+      const h = dock.offsetHeight || 56;
+      const maxL = Math.max(pad, window.innerWidth - w - pad);
+      const maxT = Math.max(pad, window.innerHeight - h - pad);
+      return {
+        left: Math.min(maxL, Math.max(pad, left)),
+        top: Math.min(maxT, Math.max(pad, top)),
+      };
+    }
+
+    function applyPos(left, top) {
+      const p = clamp(left, top);
+      dock.classList.add("is-placed");
+      dock.style.left = `${p.left}px`;
+      dock.style.top = `${p.top}px`;
+      dock.style.right = "auto";
+      return p;
+    }
+
+    function restore() {
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (!raw) return;
+        const pos = JSON.parse(raw);
+        if (typeof pos?.left === "number" && typeof pos?.top === "number") {
+          applyPos(pos.left, pos.top);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    function save(left, top) {
+      localStorage.setItem(KEY, JSON.stringify({ left, top }));
+    }
+
+    restore();
+
+    const onMove = (e) => {
+      if (!tracking) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (!moved && Math.hypot(dx, dy) < THRESHOLD) return;
+
+      if (!moved) {
+        moved = true;
+        dock.classList.add("is-dragging");
+        document.getElementById("profile-menu")?.classList.add("hidden");
+        document.getElementById("profile-photo-submenu")?.classList.add("hidden");
+        try {
+          dock.setPointerCapture(pointerId);
+        } catch {
+          /* ignore */
+        }
+      }
+      e.preventDefault();
+      applyPos(originLeft + dx, originTop + dy);
+    };
+
+    const onUp = () => {
+      if (!tracking) return;
+      tracking = false;
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      dock.classList.remove("is-dragging");
+
+      if (pointerId != null) {
+        try {
+          dock.releasePointerCapture(pointerId);
+        } catch {
+          /* ignore */
+        }
+        pointerId = null;
+      }
+
+      if (moved) {
+        const rect = dock.getBoundingClientRect();
+        const p = applyPos(rect.left, rect.top);
+        save(p.left, p.top);
+        // Sürükleme bittikten sonra gelen click'i bir kerelik yut
+        const swallow = (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          dock.removeEventListener("click", swallow, true);
+        };
+        dock.addEventListener("click", swallow, true);
+      }
+      // moved=false ise doğal click → profil menüsü açılır
+      moved = false;
+    };
+
+    dock.addEventListener("pointerdown", (e) => {
+      if (e.button != null && e.button !== 0) return;
+      const rect = dock.getBoundingClientRect();
+      startX = e.clientX;
+      startY = e.clientY;
+      originLeft = rect.left;
+      originTop = rect.top;
+      tracking = true;
+      moved = false;
+      pointerId = e.pointerId;
+      // Capture HEMEN alma — eşik aşılmadan tıklama bozulmasın
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    });
+
+    window.addEventListener("resize", () => {
+      if (!dock.classList.contains("is-placed")) return;
+      const rect = dock.getBoundingClientRect();
+      const p = applyPos(rect.left, rect.top);
+      save(p.left, p.top);
+    });
+  }
+
   function mount() {
     if (!Auth.isLoggedIn()) return;
     ensureStylesheet();
     ensureUi();
     bindTriggers();
+    enableDockDrag();
     paintAll();
     refreshUser();
   }

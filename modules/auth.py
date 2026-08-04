@@ -202,12 +202,20 @@ def register(email: str, password: str, name: str, username: str | None = None) 
         else:
             uname = _unique_username(conn, email.split("@")[0])
 
-        cursor = conn.execute(
-            """INSERT INTO users (email, password_hash, name, username, avatar_type)
-               VALUES (?, ?, ?, ?, 'default')""",
-            (email, hash_password(password), name.strip(), uname),
-        )
-        conn.commit()
+        try:
+            cursor = conn.execute(
+                """INSERT INTO users (email, password_hash, name, username, avatar_type)
+                   VALUES (?, ?, ?, ?, 'default')""",
+                (email, hash_password(password), name.strip(), uname),
+            )
+            conn.commit()
+        except Exception as e:
+            msg = str(e).lower()
+            if "unique" in msg:
+                if "username" in msg:
+                    raise ValueError("Bu kullanici adi zaten alinmis") from e
+                raise ValueError("Bu e-posta zaten kayitli") from e
+            raise
         user_id = cursor.lastrowid
 
         conn.execute(
@@ -282,11 +290,17 @@ def update_profile(
 
     params.append(user_id)
     with get_db() as conn:
-        conn.execute(
-            f"UPDATE users SET {', '.join(fields)} WHERE id = ?",
-            tuple(params),
-        )
-        conn.commit()
+        try:
+            conn.execute(
+                f"UPDATE users SET {', '.join(fields)} WHERE id = ?",
+                tuple(params),
+            )
+            conn.commit()
+        except Exception as e:
+            msg = str(e).lower()
+            if "unique" in msg or "username" in msg:
+                raise ValueError("Bu kullanici adi zaten alinmis") from e
+            raise
 
     updated = get_user_by_id(user_id)
     return _public_user(updated or row)

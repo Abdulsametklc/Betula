@@ -28,9 +28,9 @@ class Settings(BaseSettings):
     seed_default_admin: bool = False
     database_path: str = "LocalInsights.db"
 
-    # Conservative for Groq free-tier TPM
+    # Gap extraction + web research (keep equal so every heading gets a summary)
     max_gaps: int = 5
-    max_web_searches: int = 3
+    max_web_searches: int = 5
 
     vectorstore_root: str = "data/vectorstore"
     uploads_root: str = "data/uploads"

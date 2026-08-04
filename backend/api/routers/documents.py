@@ -193,16 +193,22 @@ def download_compiled_note(
     if k in {"note", "full"} and not (note.get("markdown") or "").strip() and k != "gaps":
         raise HTTPException(status_code=404, detail="Derlenmis not yok")
 
-    data, media, filename = build_export(
-        note,
-        kind=k,
-        fmt=fmt,
-        doc_title=doc.get("filename"),
-    )
+    try:
+        data, media, filename = build_export(
+            note,
+            kind=k,
+            fmt=fmt,
+            doc_title=doc.get("filename"),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Disa aktarma hatasi: {e}") from e
+
+    # ASCII-only filename — Starlette headers latin-1
+    safe = "".join(ch if ord(ch) < 128 else "_" for ch in filename) or f"betula.{fmt}"
     return Response(
         content=data,
         media_type=media,
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": f'attachment; filename="{safe}"'},
     )
 
 

@@ -501,8 +501,11 @@ def _ensure_user_profile_columns(conn):
             conn.execute("ALTER TABLE users ADD COLUMN oauth_provider TEXT")
         if "oauth_subject" not in cols:
             conn.execute("ALTER TABLE users ADD COLUMN oauth_subject TEXT")
+        conn.execute("DROP INDEX IF EXISTS idx_users_username")
         conn.execute(
-            "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)"
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username "
+            "ON users(username COLLATE NOCASE) "
+            "WHERE username IS NOT NULL AND username != ''"
         )
         conn.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_oauth "
