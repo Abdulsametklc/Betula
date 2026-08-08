@@ -189,12 +189,12 @@
           </div>
           <div class="mt-4 flex items-center gap-3">
             <span class="material-symbols-outlined text-on-surface-variant text-[20px]">zoom_out</span>
-            <input id="profile-crop-zoom" type="range" min="100" max="350" value="100" class="flex-1 accent-[#c2652a]"/>
+            <input id="profile-crop-zoom" type="range" min="100" max="350" value="100" class="flex-1 accent-[#d95d39]"/>
             <span class="material-symbols-outlined text-on-surface-variant text-[20px]">zoom_in</span>
           </div>
           <div class="mt-4 flex justify-end gap-2">
             <button type="button" id="profile-crop-cancel" class="px-4 py-2 rounded-lg border border-outline-variant text-sm text-on-surface-variant hover:border-primary">Vazgeç</button>
-            <button type="button" id="profile-crop-apply" class="px-5 py-2 rounded-lg text-sm font-semibold text-white" style="background:#c2652a">Kaydet</button>
+            <button type="button" id="profile-crop-apply" class="px-5 py-2 rounded-lg text-sm font-semibold text-white" style="background:#d95d39">Kaydet</button>
           </div>
         </div>
       </div>

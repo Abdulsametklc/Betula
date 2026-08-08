@@ -1,193 +1,187 @@
-<!DOCTYPE html>
-<html lang="tr">
+﻿<!DOCTYPE html>
+<html class="scroll-smooth" lang="tr">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Hakkında - Betula</title>
+<title>Hakkında — Betula</title>
 <style>html:not(.betula-fonts-ready) .material-symbols-outlined{color:transparent!important;max-width:1.35em;overflow:hidden}.material-symbols-outlined{display:inline-block;line-height:1;font-size:1.25em;white-space:nowrap}</style>
-<link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<link rel="icon" type="image/png" href="/static/assets/betula-mark.png"/>
 <link rel="stylesheet" href="/static/css/boot.css"/>
-<link rel="stylesheet" href="/static/css/betula.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
 <script src="/static/js/boot.js" defer></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary-fixed": "#ffdbd1", "primary-fixed": "#e5e2e1", "surface-container-high": "#e9e8e7",
+        "surface-container-lowest": "#ffffff", "on-primary-fixed": "#1c1b1b", "outline-variant": "#c4c7c7",
+        "on-error": "#ffffff", "surface-container": "#efeded", "surface": "#fbf9f8",
+        "inverse-on-surface": "#f2f0f0", "on-secondary-fixed-variant": "#474744", "primary-fixed-dim": "#c8c6c5",
+        "on-tertiary-fixed-variant": "#862201", "tertiary-fixed-dim": "#ffb5a0", "primary": "#000000",
+        "on-surface-variant": "#444748", "on-secondary-fixed": "#1b1c19", "secondary-fixed": "#e4e2dd",
+        "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#474646", "error": "#ba1a1a",
+        "on-error-container": "#93000a", "on-background": "#1b1c1c", "surface-bright": "#fbf9f8",
+        "tertiary": "#000000", "on-tertiary-container": "#d95d39", "on-secondary-container": "#63635f",
+        "on-primary": "#ffffff", "secondary": "#5e5e5b", "surface-container-highest": "#e4e2e2",
+        "on-primary-container": "#858383", "secondary-container": "#e1dfdb", "error-container": "#ffdad6",
+        "inverse-surface": "#303031", "surface-tint": "#5f5e5e", "on-tertiary-fixed": "#3b0900",
+        "primary-container": "#1c1b1b", "on-secondary": "#ffffff", "inverse-primary": "#c8c6c5",
+        "background": "#fbf9f8", "on-surface": "#1b1c1c", "surface-container-low": "#f5f3f3",
+        "surface-variant": "#e4e2e2", "outline": "#747878", "surface-dim": "#dbdad9",
+        "tertiary-container": "#3b0900", "secondary-fixed-dim": "#c8c6c2"
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: {
+        lg: "48px", xl: "80px", xs: "4px", "container-max": "1280px",
+        sm: "12px", gutter: "24px", base: "8px", md: "24px"
+      },
+      fontFamily: {
+        button: ["Inter"], "body-md": ["Inter"], "label-caps": ["JetBrains Mono"],
+        "headline-md": ["Plus Jakarta Sans"], "body-lg": ["Inter"],
+        "display-lg": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"]
+      },
+      fontSize: {
+        button: ["14px", { lineHeight: "1.0", letterSpacing: "0.02em", fontWeight: "600" }],
+        "body-md": ["16px", { lineHeight: "1.5", letterSpacing: "0", fontWeight: "400" }],
+        "label-caps": ["12px", { lineHeight: "1.0", letterSpacing: "0.1em", fontWeight: "500" }],
+        "headline-md": ["24px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "0", fontWeight: "400" }],
+        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "display-lg-mobile": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "700" }]
+      }
+    }
+  }
+};
+</script>
 <style>
-  body { background-color: #fff8f6; color: #221a16; overflow-x: hidden; margin: 0; }
-  .primary-btn { background-color: #c2652a; color: #ffffff; transition: all 0.3s ease; }
-  .primary-btn:hover { background-color: #b0571f; box-shadow: 0 4px 14px rgba(194,101,42,0.3); }
-  .fade-in-up { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.8s ease forwards; }
+  body {
+    background-color: #fbf9f8;
+    background-image:
+      radial-gradient(at 80% 0%, hsla(11, 80%, 75%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(28, 100%, 85%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, hsla(11, 80%, 75%, 0.1) 0px, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #1b1c1c;
+  }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  }
+  .ambient-shadow { box-shadow: 0 10px 40px -10px rgba(217, 93, 57, 0.12); }
+  .primary-btn { background: #d95d39; color: #fff; }
+  .primary-btn:hover { background: #c24f2f; }
+  .modal-backdrop { background: rgba(27, 28, 28, 0.45); backdrop-filter: blur(8px); }
+  #user-chip.is-open { display: flex !important; align-items: center; gap: 0.5rem; }
+  .fade-in-up { opacity: 0; transform: translateY(16px); animation: fadeInUp 0.7s ease forwards; }
   .delay-100 { animation-delay: 0.1s; }
   .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
   @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-  .modal-backdrop { background: rgba(34,26,22,0.45); backdrop-filter: blur(6px); }
-  .site-nav {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-  .about-nav {
-    position: sticky;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    z-index: 50;
-    padding-top: env(safe-area-inset-top, 0px);
-    background: rgba(255, 248, 246, 0.96);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(244, 222, 213, 0.7);
-    box-sizing: border-box;
-  }
-  .about-nav-inner {
-    position: relative;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: none;
-    height: 4rem;
-    margin: 0;
-    padding: 0 clamp(1rem, 3vw, 2.5rem);
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .site-nav-brand {
-    position: relative;
-    z-index: 2;
-    flex: 0 0 auto;
-  }
-  .brand-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.65rem;
-    flex-shrink: 0;
-    text-decoration: none;
-    color: #c2652a;
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
-  }
-  .brand-mark {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    object-fit: contain;
-    object-position: center;
-    display: block;
-    flex-shrink: 0;
-    background: transparent;
-  }
-  .site-nav-links {
-    display: none !important;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    font-size: 0.9rem;
-    line-height: 1;
-    margin: 0;
-    padding: 0;
-  }
-  @media (min-width: 768px) {
-    .site-nav-links { display: flex !important; }
-  }
-  .site-nav-links a {
-    color: #52443c;
-    text-decoration: none;
-    transition: color 0.15s ease;
-    white-space: nowrap;
-  }
-  .site-nav-links a:hover { color: #c2652a; }
-  .site-nav-links a.is-active { color: #c2652a; font-weight: 600; }
-  .site-nav-actions {
-    position: relative;
-    z-index: 2;
-    flex: 0 0 auto;
-    margin-left: auto;
-    display: flex !important;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.75rem;
-  }
-  #user-chip.is-open {
-    display: flex !important;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .about-main {
-    flex: 1;
-    width: 100%;
-    max-width: 48rem;
-    margin: 0 auto;
-    padding: 3rem 1.5rem 4rem;
-    box-sizing: border-box;
-  }
-  @media (min-width: 768px) {
-    .about-main { padding: 4rem 3rem 5rem; }
-  }
 </style>
 </head>
-<body class="antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
-<nav class="about-nav">
-  <div class="about-nav-inner">
-    <div class="site-nav-brand">
-      <a class="brand-link" href="/">
-        <img class="brand-mark" src="/static/assets/betula-logo.png" alt="Betula"/>
-        <span>Betula</span>
-      </a>
+<body class="font-body-md text-body-md antialiased overflow-x-hidden selection:bg-tertiary-fixed selection:text-on-tertiary-fixed min-h-screen flex flex-col">
+
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm shadow-tertiary-fixed/5">
+  <div class="flex items-center justify-between px-gutter py-4 max-w-container-max mx-auto gap-4">
+    <a href="/" class="flex items-center gap-2 transition-all duration-300 hover:opacity-80 active:scale-95 shrink-0">
+      <span class="material-symbols-outlined text-[32px] text-primary" style="font-variation-settings: 'FILL' 1;" aria-hidden="true">eco</span>
+      <span class="font-display-lg text-display-lg-mobile md:text-[28px] tracking-tighter text-primary leading-none">Betula</span>
+    </a>
+    <div class="hidden md:flex items-center gap-8">
+      <a class="text-secondary hover:text-primary pb-1 transition-all hover:opacity-80" href="/#hero">Ürün</a>
+      <a class="text-secondary hover:text-primary pb-1 transition-all hover:opacity-80" href="/#features">Özellikler</a>
+      <a class="text-tertiary-container font-bold border-b-2 border-tertiary-container pb-1" href="/hakkinda">Hakkında</a>
+      <a class="text-secondary hover:text-primary pb-1 transition-all hover:opacity-80" href="#" data-nav-app>Çalışma Alanı</a>
     </div>
-    <div class="site-nav-links">
-      <a href="/#features">Özellikler</a>
-      <a class="is-active" href="/hakkinda">Hakkında</a>
-      <a href="/oturumlar" data-nav-app>Oturumlar</a>
-    </div>
-    <div class="site-nav-actions">
-      <button id="btn-auth" type="button" class="primary-btn" style="display:none;align-items:center;justify-content:center;height:2.5rem;padding:0 1.5rem;border-radius:9999px;border:0;font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer">
-        Başla
-      </button>
-      <div id="user-chip" class="hidden">
-        <span id="user-name" class="text-sm text-on-surface-variant hidden sm:inline" data-profile-name></span>
-        <button type="button" data-profile-trigger title="Profil" id="user-avatar" data-profile-avatar>L</button>
+    <div class="flex items-center gap-3 shrink-0">
+      <button type="button" id="btn-auth" class="hidden md:inline-flex font-button text-button text-primary hover:opacity-80 transition-all">Giriş Yap</button>
+      <button type="button" id="btn-kesfet" class="font-button text-button bg-primary text-on-primary px-5 py-2.5 rounded-full hover:bg-tertiary-container transition-all active:scale-95 shadow-md shadow-primary/10">Başla</button>
+      <div id="user-chip" class="hidden items-center gap-2">
+        <span id="user-name" class="text-sm text-secondary hidden sm:inline" data-profile-name></span>
+        <button type="button" data-profile-trigger title="Profil" id="user-avatar" data-profile-avatar>U</button>
       </div>
     </div>
   </div>
 </nav>
 
-<main class="about-main">
-  <div>
-    <p class="font-label-sm text-label-sm uppercase tracking-widest text-primary mb-3 fade-in-up">Betula</p>
-    <h1 class="font-display-lg text-[40px] md:text-display-lg text-on-surface mb-6 fade-in-up delay-100 tracking-tight">Hakkında</h1>
-    <div class="space-y-6 font-body-md text-body-md text-on-surface-variant leading-relaxed fade-in-up delay-200">
-      <p>
-        Betula, notlarınızı ve belgelerinizi okuyup eksikleri tamamlayan bir çalışma asistanıdır.
-        Bu sayfadaki metinler geçicidir; ürün hikâyesi, ekip ve yol haritası yakında burada yer alacak.
+<main class="flex-1 pt-[120px] pb-xl px-gutter max-w-container-max mx-auto w-full">
+  <div class="max-w-3xl mx-auto">
+    <p class="font-label-caps text-label-caps text-on-tertiary-container mb-3 fade-in-up">BETULA</p>
+    <h1 class="font-display-lg-mobile md:text-display-lg text-display-lg-mobile text-primary tracking-tight mb-4 fade-in-up delay-100">Hakkında</h1>
+    <p class="font-body-lg text-body-lg text-secondary mb-10 fade-in-up delay-200">
+      Odaklı öğrenme için sakin, premium bir çalışma alanı.
+    </p>
+
+    <div class="glass-panel rounded-2xl p-8 md:p-10 ambient-shadow space-y-6 fade-in-up delay-300">
+      <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+        Betula, notlarını ve belgelerini okuyup eksikleri tamamlayan bir AI çalışma asistanıdır.
+        Kaynaklarını yükle, sentezle, sohbet et ve flashcard / quiz ile pekiştir.
       </p>
-      <p>
-        Şimdilik odak noktamız net: yükle, sentezle, sohbet et, pekiştir.
-        Daha fazla ayrıntı için yakında güncellenecek.
+      <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+        Odak noktamız net: gürültüsüz bir arayüz, güçlü RAG tabanlı bilgi erişimi ve öğrenme ilerlemesini
+        takip eden kişisel bellek. Ürün hikâyesi, ekip ve yol haritası yakında burada genişleyecek.
       </p>
-      <p>
-        Lorem ipsum placeholder — misyon, vizyon ve sürüm notları buraya gelecek.
-      </p>
+      <div class="grid sm:grid-cols-3 gap-4 pt-2">
+        <div class="rounded-xl bg-surface-container-low/80 border border-outline-variant/40 p-4">
+          <span class="material-symbols-outlined text-on-tertiary-container mb-2 block" style="font-variation-settings:'FILL' 1">psychology</span>
+          <p class="font-button text-button text-primary mb-1">Akıllı RAG</p>
+          <p class="text-sm text-secondary">Belgelerinden vektör tabanlı bilgi çekimi</p>
+        </div>
+        <div class="rounded-xl bg-surface-container-low/80 border border-outline-variant/40 p-4">
+          <span class="material-symbols-outlined text-on-tertiary-container mb-2 block" style="font-variation-settings:'FILL' 1">style</span>
+          <p class="font-button text-button text-primary mb-1">Flashcards</p>
+          <p class="text-sm text-secondary">Otomatik kartlar ve aralıklı tekrar</p>
+        </div>
+        <div class="rounded-xl bg-surface-container-low/80 border border-outline-variant/40 p-4">
+          <span class="material-symbols-outlined text-on-tertiary-container mb-2 block" style="font-variation-settings:'FILL' 1">hub</span>
+          <p class="font-button text-button text-primary mb-1">Kişisel bellek</p>
+          <p class="text-sm text-secondary">İlerleme ve bilgi haritası takibi</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-wrap gap-3 fade-in-up delay-300">
+      <button type="button" id="btn-begin" class="primary-btn px-6 py-3 rounded-full font-button text-button ambient-shadow">Çalışmaya başla</button>
+      <a href="/" class="px-6 py-3 rounded-full border border-outline-variant bg-white/70 hover:bg-white font-button text-button text-primary transition-colors">Ana sayfa</a>
     </div>
   </div>
 </main>
 
-<footer class="w-full py-12 bg-background border-t border-outline-variant flex justify-center items-center px-margin-mobile md:px-margin-desktop mt-auto">
-  <div class="font-body-md text-body-md font-bold text-primary text-center">© 2026 Betula</div>
+<footer class="w-full py-10 border-t border-outline-variant/30 mt-auto">
+  <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-[24px] text-primary" style="font-variation-settings: 'FILL' 1;" aria-hidden="true">eco</span>
+      <span class="font-headline-md text-[18px] text-primary">Betula</span>
+    </div>
+    <p class="font-body-md text-body-md text-secondary text-center md:text-left text-sm">
+      © 2026 Betula AI. Odaklı zihinler için sakin teknoloji.
+    </p>
+    <div class="flex items-center gap-5 text-sm">
+      <a class="text-secondary hover:text-tertiary-container transition-all" href="/hakkinda">Hakkında</a>
+      <a class="text-secondary hover:text-tertiary-container transition-all" href="#" data-nav-app>Oturumlar</a>
+      <a class="text-secondary hover:text-tertiary-container transition-all" href="/">Ana sayfa</a>
+    </div>
+  </div>
 </footer>
 
 <!-- Auth Modal -->
 <div id="auth-modal" class="fixed inset-0 z-[100] hidden items-center justify-center modal-backdrop p-4">
   <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-xl w-full max-w-md p-8 relative">
-    <button id="auth-close" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary">
+    <button id="auth-close" type="button" class="absolute top-4 right-4 text-secondary hover:text-primary">
       <span class="material-symbols-outlined">close</span>
     </button>
-    <h2 id="auth-title" class="font-headline-lg text-headline-lg-mobile text-on-surface mb-2">Giriş Yap</h2>
-    <p id="auth-subtitle" class="text-sm text-on-surface-variant mb-6">Hesabınla çalışma alanına geç.</p>
+    <h2 id="auth-title" class="font-headline-md text-headline-md text-on-surface mb-2">Giriş Yap</h2>
+    <p id="auth-subtitle" class="text-sm text-secondary mb-6">Hesabınla çalışma alanına geç.</p>
 
     <div id="oauth-buttons" class="hidden flex flex-col gap-2 mb-4">
       <button type="button" id="oauth-google" class="hidden w-full py-2.5 rounded-full border border-outline-variant bg-white hover:bg-surface-container text-sm font-semibold text-on-surface flex items-center justify-center gap-2">
@@ -195,76 +189,77 @@
         Google ile devam et
       </button>
       <button type="button" id="oauth-github" class="hidden w-full py-2.5 rounded-full border border-outline-variant bg-[#24292f] hover:bg-black text-sm font-semibold text-white flex items-center justify-center gap-2">
-        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.5 7.5 0 012-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         GitHub ile devam et
       </button>
     </div>
     <div id="oauth-divider" class="hidden flex items-center gap-3 mb-4">
       <div class="h-px flex-1 bg-outline-variant"></div>
-      <span class="text-xs uppercase tracking-wider text-on-surface-variant">veya</span>
+      <span class="text-xs uppercase tracking-wider text-secondary">veya</span>
       <div class="h-px flex-1 bg-outline-variant"></div>
     </div>
 
     <form id="auth-form" class="flex flex-col gap-4">
       <div id="auth-login-fields" class="flex flex-col gap-4">
         <div id="name-field" class="hidden">
-          <label class="block text-xs uppercase tracking-wider text-on-surface-variant mb-1">Ad</label>
-          <input id="auth-name" type="text" class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary" placeholder="Adın"/>
+          <label class="block text-xs uppercase tracking-wider text-secondary mb-1">Ad</label>
+          <input id="auth-name" type="text" class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-on-tertiary-container focus:ring-on-tertiary-container" placeholder="Adın"/>
         </div>
         <div>
-          <label class="block text-xs uppercase tracking-wider text-on-surface-variant mb-1">E-posta</label>
-          <input id="auth-email" type="email" class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary" placeholder="ornek@mail.com"/>
+          <label class="block text-xs uppercase tracking-wider text-secondary mb-1">E-posta</label>
+          <input id="auth-email" type="email" class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-on-tertiary-container focus:ring-on-tertiary-container" placeholder="ornek@mail.com"/>
         </div>
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs uppercase tracking-wider text-on-surface-variant">Şifre</label>
-            <button type="button" id="auth-forgot-link" class="text-xs text-primary hover:underline">Şifremi unuttum</button>
+            <label class="block text-xs uppercase tracking-wider text-secondary">Şifre</label>
+            <button type="button" id="auth-forgot-link" class="text-xs text-on-tertiary-container hover:underline">Şifremi unuttum</button>
           </div>
-          <input id="auth-password" type="password" minlength="6" class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary" placeholder="••••••••"/>
+          <input id="auth-password" type="password" minlength="6" class="w-full rounded-lg border-outline-variant bg-surface-container focus:border-on-tertiary-container focus:ring-on-tertiary-container" placeholder="En az 6 karakter"/>
         </div>
-        <button id="auth-submit" type="submit" class="primary-btn h-11 rounded-full font-label-sm text-label-sm uppercase tracking-wider">Giriş Yap</button>
+        <button type="submit" id="auth-submit" class="w-full py-3 rounded-full primary-btn font-button text-button uppercase tracking-wider">Giriş Yap</button>
       </div>
 
       <div id="forgot-panel" class="hidden flex flex-col gap-4">
         <div id="forgot-step-request" class="space-y-3">
           <label class="block">
-            <span class="text-xs uppercase tracking-wider text-on-surface-variant">E-posta veya kullanıcı adı</span>
+            <span class="text-xs uppercase tracking-wider text-secondary">E-posta veya kullanıcı adı</span>
             <input id="forgot-identifier" type="text" autocomplete="username"
-              class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary"
+              class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container focus:border-on-tertiary-container focus:ring-on-tertiary-container"
               placeholder="ornek@mail.com veya kullaniciadi"/>
           </label>
-          <button type="button" id="forgot-send" class="primary-btn h-11 rounded-full font-label-sm text-label-sm uppercase tracking-wider w-full">Kod gönder</button>
+          <button type="button" id="forgot-send" class="w-full py-3 rounded-full primary-btn font-button text-button uppercase tracking-wider">Kod gönder</button>
         </div>
         <div id="forgot-step-code" class="hidden space-y-3">
           <label class="block">
-            <span class="text-xs uppercase tracking-wider text-on-surface-variant">Aktivasyon kodu</span>
+            <span class="text-xs uppercase tracking-wider text-secondary">Aktivasyon kodu</span>
             <input id="forgot-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
-              class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary tracking-[0.35em] text-center text-lg"
+              class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container focus:border-on-tertiary-container focus:ring-on-tertiary-container tracking-[0.35em] text-center text-lg"
               placeholder="••••••"/>
           </label>
-          <button type="button" id="forgot-verify" class="primary-btn h-11 rounded-full font-label-sm text-label-sm uppercase tracking-wider w-full">Kodu doğrula</button>
-          <button type="button" id="forgot-resend" class="w-full text-sm text-on-surface-variant hover:text-primary">Kodu yeniden gönder</button>
+          <button type="button" id="forgot-verify" class="w-full py-3 rounded-full primary-btn font-button text-button uppercase tracking-wider">Kodu doğrula</button>
+          <button type="button" id="forgot-resend" class="w-full text-sm text-secondary hover:text-primary">Kodu yeniden gönder</button>
         </div>
         <div id="forgot-step-new" class="hidden space-y-3">
           <label class="block">
-            <span class="text-xs uppercase tracking-wider text-on-surface-variant">Yeni şifre</span>
+            <span class="text-xs uppercase tracking-wider text-secondary">Yeni şifre</span>
             <input id="forgot-password" type="password" minlength="6" autocomplete="new-password"
-              class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary"/>
+              class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container focus:border-on-tertiary-container focus:ring-on-tertiary-container"/>
           </label>
           <label class="block">
-            <span class="text-xs uppercase tracking-wider text-on-surface-variant">Yeni şifre (tekrar)</span>
+            <span class="text-xs uppercase tracking-wider text-secondary">Yeni şifre (tekrar)</span>
             <input id="forgot-password2" type="password" minlength="6" autocomplete="new-password"
-              class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container focus:border-primary focus:ring-primary"/>
+              class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container focus:border-on-tertiary-container focus:ring-on-tertiary-container"/>
           </label>
-          <button type="button" id="forgot-confirm" class="primary-btn h-11 rounded-full font-label-sm text-label-sm uppercase tracking-wider w-full">Şifreyi güncelle</button>
+          <button type="button" id="forgot-confirm" class="w-full py-3 rounded-full primary-btn font-button text-button uppercase tracking-wider">Şifreyi güncelle</button>
         </div>
-        <button type="button" id="forgot-back" class="text-sm text-on-surface-variant hover:text-primary">← Girişe dön</button>
+        <button type="button" id="forgot-back" class="text-sm text-secondary hover:text-primary">← Girişe dön</button>
       </div>
 
-      <p id="auth-error" class="hidden text-sm text-error"></p>
-      <p id="forgot-hint" class="hidden text-xs text-on-surface-variant"></p>
-      <button type="button" id="auth-toggle" class="text-sm text-on-surface-variant hover:text-primary">Hesabın yok mu? Kayıt ol</button>
+      <p id="auth-error" class="text-sm text-error hidden"></p>
+      <p id="forgot-hint" class="text-xs text-secondary hidden"></p>
     </form>
+    <p class="mt-4 text-sm text-center text-secondary">
+      <button type="button" id="auth-toggle" class="text-on-tertiary-container hover:underline">Hesabın yok mu? Kayıt ol</button>
+    </p>
   </div>
 </div>
 
@@ -291,8 +286,7 @@
     modal.classList.add("hidden");
     modal.classList.remove("flex");
     document.getElementById("auth-error").classList.add("hidden");
-    const hint = document.getElementById("forgot-hint");
-    if (hint) hint.classList.add("hidden");
+    document.getElementById("forgot-hint")?.classList.add("hidden");
   }
 
   function syncAuthUI() {
@@ -322,21 +316,20 @@
   }
 
   function goApp() {
-    if (Auth.isLoggedIn()) {
-      window.location.href = "/oturumlar";
-    } else {
-      openAuth("login");
-    }
+    if (Auth.isLoggedIn()) location.href = "/oturumlar";
+    else openAuth("login");
   }
 
   function refreshUserUI() {
     const logged = Auth.isLoggedIn();
     const btn = document.getElementById("btn-auth");
     const chip = document.getElementById("user-chip");
+    const kesfet = document.getElementById("btn-kesfet");
     if (btn) {
       btn.style.display = logged ? "none" : "inline-flex";
       btn.classList.toggle("hidden", logged);
     }
+    if (kesfet) kesfet.classList.toggle("hidden", logged);
     if (chip) {
       chip.classList.toggle("hidden", !logged);
       chip.classList.toggle("is-open", logged);
@@ -349,6 +342,8 @@
   }
 
   document.getElementById("btn-auth").addEventListener("click", () => openAuth("login"));
+  document.getElementById("btn-kesfet").addEventListener("click", goApp);
+  document.getElementById("btn-begin").addEventListener("click", goApp);
   document.getElementById("auth-close").addEventListener("click", closeAuth);
   document.getElementById("auth-modal").addEventListener("click", (e) => {
     if (e.target.id === "auth-modal") closeAuth();
@@ -359,11 +354,9 @@
     syncAuthUI();
   });
   document.querySelectorAll("[data-nav-app]").forEach((el) => {
-    el.addEventListener("click", (e) => {
-      e.preventDefault();
-      goApp();
-    });
+    el.addEventListener("click", (e) => { e.preventDefault(); goApp(); });
   });
+
   document.getElementById("auth-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (mode === "forgot") return;
@@ -378,7 +371,7 @@
         : await LI.login(email, password);
       Auth.setSession(data.access_token, data.user);
       closeAuth();
-      window.location.href = "/oturumlar";
+      location.href = "/oturumlar";
     } catch (ex) {
       err.textContent = ex.message || "İşlem başarısız";
       err.classList.remove("hidden");
@@ -386,6 +379,8 @@
   });
 
   refreshUserUI();
+  if (new URLSearchParams(location.search).get("login") === "1") openAuth("login");
+  if (new URLSearchParams(location.search).get("reset") === "1") openAuth("forgot");
 </script>
 </body>
 </html>

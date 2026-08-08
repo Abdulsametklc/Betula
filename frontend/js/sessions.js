@@ -11,7 +11,7 @@
 
   let editingId = null;
   let sessionsCache = [];
-  let viewMode = localStorage.getItem(KEY_VIEW) === "list" ? "list" : "grid";
+  let viewMode = localStorage.getItem(KEY_VIEW) === "grid" ? "grid" : "list";
   let sortMode = localStorage.getItem(KEY_SORT) || "date-desc";
   if (!["date-desc", "date-asc", "name-asc", "name-desc"].includes(sortMode)) {
     sortMode = "date-desc";
@@ -141,27 +141,27 @@
 
   function renderGridCard(s, delay) {
     return `
-      <article class="session-card enter rounded-2xl p-5 flex flex-col gap-4" style="animation-delay:${delay}s">
+      <article class="glass-panel rounded-xl p-md flex flex-col gap-3 hover:border-tertiary-fixed-dim transition-all group" style="animation-delay:${delay}s">
         <button data-open="${s.id}" class="text-left flex-1">
-          <div class="flex items-start justify-between gap-3 mb-3">
-            <div class="w-11 h-11 rounded-xl bg-primary-container border border-outline-variant flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-primary">forest</span>
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="w-10 h-10 rounded-full bg-tertiary-fixed/40 text-on-tertiary-container flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">eco</span>
             </div>
-            <span class="text-[11px] text-on-surface-variant">${formatDate(s.created_at || s.updated_at)}</span>
+            <span class="text-[12px] text-secondary">${formatDate(s.created_at || s.updated_at)}</span>
           </div>
-          <h3 class="text-[17px] font-semibold text-on-surface leading-snug mb-1">${escapeHtml(s.title || "Oturum")}</h3>
-          <p class="text-[13px] text-on-surface-variant line-clamp-2 min-h-[2.5em]">${escapeHtml(s.description || "Açıklama yok")}</p>
+          <h3 class="font-headline-md text-[18px] text-primary leading-snug mb-1">${escapeHtml(s.title || "Oturum")}</h3>
+          <p class="text-[14px] text-secondary line-clamp-2 min-h-[2.5em]">${escapeHtml(s.description || "Açıklama yok")}</p>
         </button>
-        <div class="flex items-center gap-3 text-[12px] text-on-surface-variant border-t border-outline-variant pt-3">
-          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">description</span>${s.doc_count || 0}</span>
-          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">chat</span>${s.chat_count || 0}</span>
-          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">quiz</span>${s.quiz_count || 0}</span>
-          <div class="ml-auto flex gap-1">
-            <button data-edit="${s.id}" class="p-1.5 rounded-lg hover:bg-surface-container" title="Düzenle">
-              <span class="material-symbols-outlined text-[16px]">edit</span>
+        <div class="flex items-center gap-3 text-[13px] text-secondary border-t border-outline-variant/30 pt-3">
+          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">description</span>${s.doc_count || 0}</span>
+          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">chat</span>${s.chat_count || 0}</span>
+          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">quiz</span>${s.quiz_count || 0}</span>
+          <div class="ml-auto flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+            <button data-edit="${s.id}" class="p-2 rounded-full hover:bg-surface-container-highest text-secondary" title="Düzenle">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
             </button>
-            <button data-del="${s.id}" class="p-1.5 rounded-lg hover:bg-surface-container text-red-700" title="Sil">
-              <span class="material-symbols-outlined text-[16px]">delete</span>
+            <button data-del="${s.id}" class="p-2 rounded-full hover:bg-error-container text-secondary hover:text-error" title="Sil">
+              <span class="material-symbols-outlined text-[18px]">delete</span>
             </button>
           </div>
         </div>
@@ -169,35 +169,27 @@
   }
 
   function renderListRow(s, delay) {
+    const isActive = Auth.sessionId === s.id;
     return `
-      <article class="session-card enter session-row rounded-2xl" style="animation-delay:${delay}s">
-        <button data-open="${s.id}" class="session-row-main">
-          <div class="flex items-start gap-3">
-            <div class="w-10 h-10 rounded-xl bg-primary-container border border-outline-variant flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-primary text-[20px]">forest</span>
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center justify-between gap-3">
-                <h3 class="text-[16px] font-semibold text-on-surface truncate">${escapeHtml(s.title || "Oturum")}</h3>
-                <span class="text-[11px] text-on-surface-variant shrink-0 hidden sm:inline">${formatDate(s.created_at || s.updated_at)}</span>
-              </div>
-              <p class="text-[13px] text-on-surface-variant line-clamp-1 mt-0.5">${escapeHtml(s.description || "Açıklama yok")}</p>
-              <div class="session-row-meta">
-                <span class="sm:hidden">${formatDate(s.created_at || s.updated_at)}</span>
-                <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">description</span>${s.doc_count || 0}</span>
-                <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">chat</span>${s.chat_count || 0}</span>
-                <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">quiz</span>${s.quiz_count || 0}</span>
-              </div>
-            </div>
-          </div>
+      <article class="glass-panel rounded-xl p-md flex flex-col md:flex-row justify-between items-start md:items-center gap-sm hover:border-tertiary-fixed-dim transition-all group" style="animation-delay:${delay}s">
+        <button data-open="${s.id}" class="text-left min-w-0 flex-1">
+          <h3 class="font-headline-md text-[18px] text-primary mb-xs">${escapeHtml(s.title || "Oturum")}</h3>
+          <p class="font-body-md text-body-md text-secondary">${formatDate(s.created_at || s.updated_at)}</p>
+          ${s.description ? `<p class="text-[13px] text-secondary/80 mt-1 line-clamp-1">${escapeHtml(s.description)}</p>` : ""}
         </button>
-        <div class="session-row-actions">
-          <button data-edit="${s.id}" class="p-2 rounded-lg hover:bg-surface-container" title="Düzenle">
-            <span class="material-symbols-outlined text-[18px]">edit</span>
-          </button>
-          <button data-del="${s.id}" class="p-2 rounded-lg hover:bg-surface-container text-red-700" title="Sil">
-            <span class="material-symbols-outlined text-[18px]">delete</span>
-          </button>
+        <div class="flex items-center gap-md flex-wrap">
+          <div class="flex items-center gap-xs text-secondary"><span class="material-symbols-outlined text-[20px]">description</span>${s.doc_count || 0}</div>
+          <div class="flex items-center gap-xs text-secondary"><span class="material-symbols-outlined text-[20px]">chat</span>${s.chat_count || 0}</div>
+          <div class="flex items-center gap-xs text-secondary"><span class="material-symbols-outlined text-[20px]">quiz</span>${s.quiz_count || 0}</div>
+          ${isActive ? `<span class="px-3 py-1 rounded-full bg-tertiary-fixed-dim/20 text-on-tertiary-container font-label-caps text-label-caps ml-sm">Aktif</span>` : ""}
+          <div class="flex gap-xs ml-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+            <button data-edit="${s.id}" class="p-2 rounded-full hover:bg-surface-container-highest text-secondary" title="Düzenle">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button data-del="${s.id}" class="p-2 rounded-full hover:bg-error-container text-secondary hover:text-error" title="Sil">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
         </div>
       </article>`;
   }
@@ -208,11 +200,11 @@
 
     if (!list.length) {
       host.innerHTML = `
-        <div class="session-card rounded-2xl p-10 text-center ${viewMode === "grid" ? "" : ""}" style="grid-column: 1 / -1">
-          <img src="/static/assets/betula-logo.png" alt="" class="w-16 h-16 mx-auto mb-4 object-contain opacity-90"/>
-          <h3 class="text-lg font-semibold mb-2">Henüz oturum yok</h3>
-          <p class="text-sm text-on-surface-variant mb-5">İlk çalışma alanını oluşturup kaynak yüklemeye başla.</p>
-          <button id="empty-new" class="primary-btn px-5 py-2.5 rounded-xl text-sm font-semibold">Yeni oturum oluştur</button>
+        <div class="glass-panel rounded-xl p-10 text-center" style="grid-column: 1 / -1">
+          <span class="material-symbols-outlined text-[48px] text-on-tertiary-container mb-3 block" style="font-variation-settings:'FILL' 1">eco</span>
+          <h3 class="text-lg font-semibold mb-2 text-primary">Henüz oturum yok</h3>
+          <p class="text-sm text-secondary mb-5">İlk çalışma alanını oluşturup kaynak yüklemeye başla.</p>
+          <button id="empty-new" class="primary-btn px-5 py-2.5 rounded-full text-sm font-semibold">Yeni oturum oluştur</button>
         </div>`;
       $("empty-new").onclick = () => openModal("create");
       return;

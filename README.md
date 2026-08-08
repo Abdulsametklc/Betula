@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/assets/betula-logo.png" alt="Betula" width="120" height="120"/>
+  <img src="frontend/assets/betula-mark.svg" alt="Betula" width="112" height="112"/>
 </p>
 
 <h1 align="center">Betula</h1>

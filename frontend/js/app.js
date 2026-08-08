@@ -681,7 +681,7 @@
         <div class="quiz-grow-stage">
           <div class="quiz-grow-word" aria-label="Betula">${letters}</div>
           <div class="quiz-grow-logo">
-            <img src="/static/assets/betula-logo.png" alt=""/>
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;font-size:48px;color:#d95d39" aria-hidden="true">eco</span>
           </div>
         </div>
         <p class="quiz-grow-label">Quiz üretiliyor<span class="quiz-grow-dots"><span>.</span><span>.</span><span>.</span></span></p>

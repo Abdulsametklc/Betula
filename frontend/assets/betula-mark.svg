@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512" role="img" aria-label="Betula">
+  <rect width="64" height="64" rx="14" fill="#fbf9f8"/>
+  <!-- Material Symbols eco (FILL=1), scaled into padded square -->
+  <g transform="translate(8,8) scale(2)">
+    <path fill="#111111" d="M17 8C8 10 5.9 16.17 3.82 21.67c.63.13 1.29.2 1.97.2 6.63 0 12-4.48 12-10 0-1.54-.48-2.98-1.32-4.2C16.01 8.47 16.5 8.23 17 8z"/>
+    <path fill="#fbf9f8" d="M3.95 19.5c2.66-5.37 7.13-9.54 12.05-10.5-.3-.9-.72-1.74-1.24-2.5C9.5 7.5 5.2 12.2 3.95 19.5z"/>
+  </g>
+</svg>

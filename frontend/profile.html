@@ -1,31 +1,105 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Hesap Bilgileri - Betula</title>
+<title>Hesap — Betula</title>
 <style>html:not(.betula-fonts-ready) .material-symbols-outlined{color:transparent!important;max-width:1.35em;overflow:hidden}.material-symbols-outlined{display:inline-block;line-height:1;font-size:1.25em;white-space:nowrap}</style>
-<link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<link rel="icon" type="image/png" href="/static/assets/betula-mark.png"/>
 <link rel="stylesheet" href="/static/css/boot.css"/>
-<link rel="stylesheet" href="/static/css/betula.css"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="/static/js/boot.js" defer></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary-fixed": "#ffdbd1", "primary-fixed": "#e5e2e1", "surface-container-high": "#e9e8e7",
+        "surface-container-lowest": "#ffffff", "on-primary-fixed": "#1c1b1b", "outline-variant": "#c4c7c7",
+        "on-error": "#ffffff", "surface-container": "#efeded", "surface": "#fbf9f8",
+        "inverse-on-surface": "#f2f0f0", "on-secondary-fixed-variant": "#474744", "primary-fixed-dim": "#c8c6c5",
+        "on-tertiary-fixed-variant": "#862201", "tertiary-fixed-dim": "#ffb5a0", "primary": "#000000",
+        "on-surface-variant": "#444748", "on-secondary-fixed": "#1b1c19", "secondary-fixed": "#e4e2dd",
+        "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#474646", "error": "#ba1a1a",
+        "on-error-container": "#93000a", "on-background": "#1b1c1c", "surface-bright": "#fbf9f8",
+        "tertiary": "#000000", "on-tertiary-container": "#d95d39", "on-secondary-container": "#63635f",
+        "on-primary": "#ffffff", "secondary": "#5e5e5b", "surface-container-highest": "#e4e2e2",
+        "on-primary-container": "#858383", "secondary-container": "#e1dfdb", "error-container": "#ffdad6",
+        "inverse-surface": "#303031", "surface-tint": "#5f5e5e", "on-tertiary-fixed": "#3b0900",
+        "primary-container": "#1c1b1b", "on-secondary": "#ffffff", "inverse-primary": "#c8c6c5",
+        "background": "#fbf9f8", "on-surface": "#1b1c1c", "surface-container-low": "#f5f3f3",
+        "surface-variant": "#e4e2e2", "outline": "#747878", "surface-dim": "#dbdad9",
+        "tertiary-container": "#3b0900", "secondary-fixed-dim": "#c8c6c2"
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: {
+        lg: "48px", xl: "80px", xs: "4px", "container-max": "1280px",
+        sm: "12px", gutter: "24px", base: "8px", md: "24px"
+      },
+      fontFamily: {
+        button: ["Inter"], "body-md": ["Inter"], "label-caps": ["JetBrains Mono"],
+        "headline-md": ["Plus Jakarta Sans"], "body-lg": ["Inter"],
+        "display-lg": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"]
+      },
+      fontSize: {
+        button: ["14px", { lineHeight: "1.0", letterSpacing: "0.02em", fontWeight: "600" }],
+        "body-md": ["16px", { lineHeight: "1.5", letterSpacing: "0", fontWeight: "400" }],
+        "label-caps": ["12px", { lineHeight: "1.0", letterSpacing: "0.1em", fontWeight: "500" }],
+        "headline-md": ["24px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "0", fontWeight: "400" }],
+        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "display-lg-mobile": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "700" }]
+      }
+    }
+  }
+};
+</script>
 <style>
-  body { background: #fff8f6; color: #231a14; margin: 0; font-family: Manrope, sans-serif; }
-  .primary-btn { background: #c2652a; color: #fff; }
-  .primary-btn:hover { background: #b0571f; }
-  .card { background: #fff; border: 1px solid #d7c2b6; }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  }
+  .ambient-shadow { box-shadow: 0 10px 40px -10px rgba(217, 93, 57, 0.15); }
+  .gradient-bg {
+    background: linear-gradient(135deg, #fbf9f8 0%, #ffdbd1 100%);
+    opacity: 0.3;
+  }
+  .primary-btn { background: #d95d39; color: #fff; }
+  .primary-btn:hover { background: #c24f2f; }
+  .field-input {
+    width: 100%;
+    margin-top: 0.35rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(196, 199, 199, 0.7);
+    background: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    color: #1b1c1c;
+    outline: none;
+  }
+  .field-input:focus {
+    border-color: #d95d39;
+    box-shadow: 0 0 0 3px rgba(217, 93, 57, 0.12);
+  }
   .sec-modal {
     position: fixed; inset: 0; z-index: 80;
     display: none; align-items: center; justify-content: center;
-    padding: 1rem; background: rgba(34,26,22,0.45); backdrop-filter: blur(6px);
+    padding: 1rem; background: rgba(27, 28, 28, 0.45); backdrop-filter: blur(8px);
   }
   .sec-modal.is-open { display: flex; }
   .sec-modal-panel {
-    width: 100%; max-width: 420px; background: #fff;
-    border: 1px solid #d7c2b6; border-radius: 1rem;
-    box-shadow: 0 24px 64px rgba(34,26,22,0.28); padding: 1.5rem;
+    width: 100%; max-width: 420px;
+    background: #fff;
+    border: 1px solid rgba(196, 199, 199, 0.6);
+    border-radius: 1rem;
+    box-shadow: 0 24px 64px rgba(27, 28, 28, 0.2);
+    padding: 1.5rem;
   }
   .sec-code-input {
     letter-spacing: 0.35em; text-align: center; font-size: 1.5rem;
@@ -33,62 +107,105 @@
   }
 </style>
 </head>
-<body class="min-h-screen">
-<header class="max-w-3xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
-  <a href="/oturumlar" class="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors">
-    <span class="material-symbols-outlined">arrow_back</span>
-    <span class="text-sm font-medium">Geri</span>
-  </a>
-  <div class="relative">
-    <button type="button" data-profile-trigger class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container border border-outline-variant flex items-center justify-center font-semibold shadow-sm hover:ring-2 hover:ring-primary/30 transition" data-profile-avatar>U</button>
-  </div>
-</header>
+<body class="bg-background text-on-background min-h-screen flex font-body-md relative overflow-x-hidden">
+<div class="absolute inset-0 z-0 pointer-events-none gradient-bg"></div>
+<div class="absolute -top-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-tertiary-fixed-dim/20 blur-[100px] z-0 pointer-events-none"></div>
 
-<main class="max-w-3xl mx-auto px-6 pb-16">
-  <div class="flex items-center gap-4 mb-8">
-    <div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container border border-outline-variant flex items-center justify-center text-xl font-semibold overflow-hidden" data-profile-avatar>U</div>
-    <div>
-      <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Hesap bilgileri</h1>
-      <p class="text-sm text-on-surface-variant mt-1">İsim, kullanıcı adı, e-posta ve şifreni buradan yönet.</p>
+<nav class="bg-surface-container-low h-screen w-64 fixed left-0 top-0 shadow-lg shadow-primary/5 flex-col py-md z-20 hidden md:flex">
+  <div class="px-gutter mb-xl flex items-center gap-sm">
+    <a href="/" class="flex items-center gap-2 group">
+      <span class="material-symbols-outlined text-[36px] text-on-tertiary-container shrink-0 group-hover:opacity-80 transition-opacity" style="font-variation-settings: 'FILL' 1;">eco</span>
+      <div>
+        <h1 class="font-headline-md text-[20px] text-tertiary-container tracking-tight">Betula</h1>
+        <p class="font-label-caps text-label-caps text-on-surface-variant">Hesap</p>
+      </div>
+    </a>
+  </div>
+  <ul class="flex-1 px-sm space-y-xs">
+    <li>
+      <a class="text-on-surface-variant hover:bg-surface-container-highest rounded-lg mx-2 my-1 flex items-center gap-sm p-sm hover:translate-x-1 transition-transform font-button text-button" href="/oturumlar">
+        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+        Oturumlar
+      </a>
+    </li>
+    <li>
+      <a class="bg-tertiary-container text-on-tertiary rounded-lg mx-2 my-1 flex items-center gap-sm p-sm font-button text-button" href="/hesap">
+        <span class="material-symbols-outlined text-[20px]">settings</span>
+        Hesap
+      </a>
+    </li>
+    <li>
+      <a class="text-on-surface-variant hover:bg-surface-container-highest rounded-lg mx-2 my-1 flex items-center gap-sm p-sm hover:translate-x-1 transition-transform font-button text-button" href="/">
+        <span class="material-symbols-outlined text-[20px]">home</span>
+        Ana sayfa
+      </a>
+    </li>
+  </ul>
+  <ul class="px-sm mt-auto space-y-xs border-t border-outline-variant/20 pt-sm">
+    <li>
+      <a class="text-on-surface-variant hover:bg-surface-container-highest rounded-lg mx-2 my-1 flex items-center gap-sm p-sm font-button text-button" href="/hakkinda">
+        <span class="material-symbols-outlined text-[20px]">help</span>
+        Yardım
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<main class="flex-1 ml-0 md:ml-64 relative z-10 flex flex-col min-h-screen">
+  <header class="md:hidden flex items-center justify-between p-gutter bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 sticky top-0 z-30">
+    <a href="/oturumlar" class="flex items-center gap-2 text-secondary hover:text-primary">
+      <span class="material-symbols-outlined">arrow_back</span>
+      <span class="text-sm font-medium">Oturumlar</span>
+    </a>
+    <button type="button" data-profile-trigger title="Profil" data-profile-avatar>U</button>
+  </header>
+
+  <div class="px-gutter py-xl max-w-3xl mx-auto w-full">
+    <div class="flex items-center gap-4 mb-lg">
+      <div class="w-16 h-16 rounded-full bg-tertiary-fixed/50 text-on-tertiary-container border border-outline-variant/40 flex items-center justify-center text-xl font-semibold overflow-hidden shrink-0" data-profile-avatar>U</div>
+      <div>
+        <h2 class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Hesap bilgileri</h2>
+        <p class="font-body-md text-body-md text-secondary mt-1">İsim, kullanıcı adı, e-posta ve şifreni buradan yönet.</p>
+      </div>
     </div>
+
+    <div id="profile-alert" class="hidden mb-4 px-4 py-3 rounded-xl text-sm border"></div>
+
+    <section class="glass-panel rounded-xl p-5 md:p-6 mb-4 ambient-shadow">
+      <h3 class="font-label-caps text-label-caps text-on-tertiary-container mb-4">İSİM</h3>
+      <form id="form-name" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+        <label class="flex-1 block">
+          <span class="text-xs text-secondary">Görünen ad</span>
+          <input id="field-name" type="text" required class="field-input"/>
+        </label>
+        <button type="submit" class="primary-btn px-5 py-2.5 rounded-full text-sm font-semibold shrink-0">Kaydet</button>
+      </form>
+    </section>
+
+    <section class="glass-panel rounded-xl p-5 md:p-6 mb-4 ambient-shadow">
+      <h3 class="font-label-caps text-label-caps text-on-tertiary-container mb-4">KULLANICI ADI</h3>
+      <form id="form-username" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+        <label class="flex-1 block">
+          <span class="text-xs text-secondary">3–32 karakter, harf / rakam / _</span>
+          <input id="field-username" type="text" required pattern="[A-Za-z0-9_]{3,32}" class="field-input"/>
+        </label>
+        <button type="submit" class="primary-btn px-5 py-2.5 rounded-full text-sm font-semibold shrink-0">Kaydet</button>
+      </form>
+    </section>
+
+    <section class="glass-panel rounded-xl p-5 md:p-6 mb-4 ambient-shadow">
+      <h3 class="font-label-caps text-label-caps text-on-tertiary-container mb-4">E-POSTA</h3>
+      <p id="current-email" class="text-sm text-on-surface mb-3 font-medium">—</p>
+      <p class="text-xs text-secondary mb-4">Değiştirmek için mevcut adresine aktivasyon kodu gönderilir.</p>
+      <button type="button" id="btn-change-email" class="primary-btn px-5 py-2.5 rounded-full text-sm font-semibold">E-postayı değiştir</button>
+    </section>
+
+    <section class="glass-panel rounded-xl p-5 md:p-6 ambient-shadow">
+      <h3 class="font-label-caps text-label-caps text-on-tertiary-container mb-4">ŞİFRE</h3>
+      <p class="text-xs text-secondary mb-4">Değiştirmek için e-postana aktivasyon kodu gönderilir.</p>
+      <button type="button" id="btn-change-password" class="primary-btn px-5 py-2.5 rounded-full text-sm font-semibold">Şifreyi değiştir</button>
+    </section>
   </div>
-
-  <div id="profile-alert" class="hidden mb-4 px-4 py-3 rounded-xl text-sm border"></div>
-
-  <section class="card rounded-2xl p-5 md:p-6 mb-4 shadow-sm">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary mb-4">İsim</h2>
-    <form id="form-name" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
-      <label class="flex-1 block">
-        <span class="text-xs text-on-surface-variant">Görünen ad</span>
-        <input id="field-name" type="text" required class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
-      </label>
-      <button type="submit" class="primary-btn px-5 py-2.5 rounded-lg text-sm font-semibold shrink-0">Kaydet</button>
-    </form>
-  </section>
-
-  <section class="card rounded-2xl p-5 md:p-6 mb-4 shadow-sm">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary mb-4">Kullanıcı adı</h2>
-    <form id="form-username" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
-      <label class="flex-1 block">
-        <span class="text-xs text-on-surface-variant">3–32 karakter, harf / rakam / _</span>
-        <input id="field-username" type="text" required pattern="[A-Za-z0-9_]{3,32}" class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
-      </label>
-      <button type="submit" class="primary-btn px-5 py-2.5 rounded-lg text-sm font-semibold shrink-0">Kaydet</button>
-    </form>
-  </section>
-
-  <section class="card rounded-2xl p-5 md:p-6 mb-4 shadow-sm">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary mb-4">E-posta</h2>
-    <p id="current-email" class="text-sm text-on-surface mb-3">—</p>
-    <p class="text-xs text-on-surface-variant mb-4">Değiştirmek için mevcut adresine aktivasyon kodu gönderilir.</p>
-    <button type="button" id="btn-change-email" class="primary-btn px-5 py-2.5 rounded-lg text-sm font-semibold">E-postayı değiştir</button>
-  </section>
-
-  <section class="card rounded-2xl p-5 md:p-6 shadow-sm">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary mb-4">Şifre</h2>
-    <p class="text-xs text-on-surface-variant mb-4">Değiştirmek için e-postana aktivasyon kodu gönderilir.</p>
-    <button type="button" id="btn-change-password" class="primary-btn px-5 py-2.5 rounded-lg text-sm font-semibold">Şifreyi değiştir</button>
-  </section>
 </main>
 
 <div id="sec-modal" class="sec-modal" aria-hidden="true">
@@ -96,51 +213,51 @@
     <div class="flex items-start justify-between gap-3 mb-4">
       <div>
         <h3 id="sec-title" class="text-lg font-semibold text-on-surface">Güvenlik doğrulama</h3>
-        <p id="sec-subtitle" class="text-sm text-on-surface-variant mt-1"></p>
+        <p id="sec-subtitle" class="text-sm text-secondary mt-1"></p>
       </div>
-      <button type="button" id="sec-close" class="text-on-surface-variant hover:text-primary p-1" aria-label="Kapat">
+      <button type="button" id="sec-close" class="text-secondary hover:text-primary p-1" aria-label="Kapat">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
 
     <div id="sec-step-request" class="space-y-4">
-      <p class="text-sm text-on-surface-variant">Mevcut e-posta adresine 6 haneli aktivasyon kodu gönderilecek.</p>
-      <button type="button" id="sec-send" class="primary-btn w-full py-2.5 rounded-lg text-sm font-semibold">Kod gönder</button>
+      <p class="text-sm text-secondary">Mevcut e-posta adresine 6 haneli aktivasyon kodu gönderilecek.</p>
+      <button type="button" id="sec-send" class="primary-btn w-full py-2.5 rounded-full text-sm font-semibold">Kod gönder</button>
     </div>
 
     <div id="sec-step-code" class="hidden space-y-4">
       <label class="block">
-        <span class="text-xs text-on-surface-variant uppercase tracking-wider">Aktivasyon kodu</span>
+        <span class="text-xs text-secondary uppercase tracking-wider">Aktivasyon kodu</span>
         <input id="sec-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
-          class="sec-code-input mt-2 w-full rounded-xl border border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary py-3"
+          class="sec-code-input field-input mt-2 py-3"
           placeholder="••••••"/>
       </label>
-      <button type="button" id="sec-verify" class="primary-btn w-full py-2.5 rounded-lg text-sm font-semibold">Kodu doğrula</button>
-      <button type="button" id="sec-resend" class="w-full text-sm text-on-surface-variant hover:text-primary">Kodu yeniden gönder</button>
+      <button type="button" id="sec-verify" class="primary-btn w-full py-2.5 rounded-full text-sm font-semibold">Kodu doğrula</button>
+      <button type="button" id="sec-resend" class="w-full text-sm text-secondary hover:text-primary">Kodu yeniden gönder</button>
     </div>
 
     <div id="sec-step-new" class="hidden space-y-4">
       <div id="sec-new-email-wrap" class="hidden">
         <label class="block">
-          <span class="text-xs text-on-surface-variant">Yeni e-posta</span>
-          <input id="sec-new-email" type="email" class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
+          <span class="text-xs text-secondary">Yeni e-posta</span>
+          <input id="sec-new-email" type="email" class="field-input"/>
         </label>
       </div>
       <div id="sec-new-password-wrap" class="hidden space-y-3">
         <label class="block">
-          <span class="text-xs text-on-surface-variant">Yeni şifre (en az 6 karakter)</span>
-          <input id="sec-new-password" type="password" minlength="6" autocomplete="new-password" class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
+          <span class="text-xs text-secondary">Yeni şifre (en az 6 karakter)</span>
+          <input id="sec-new-password" type="password" minlength="6" autocomplete="new-password" class="field-input"/>
         </label>
         <label class="block">
-          <span class="text-xs text-on-surface-variant">Yeni şifre (tekrar)</span>
-          <input id="sec-new-password2" type="password" minlength="6" autocomplete="new-password" class="mt-1 w-full rounded-lg border-outline-variant bg-surface-container-low focus:border-primary focus:ring-primary"/>
+          <span class="text-xs text-secondary">Yeni şifre (tekrar)</span>
+          <input id="sec-new-password2" type="password" minlength="6" autocomplete="new-password" class="field-input"/>
         </label>
       </div>
-      <button type="button" id="sec-confirm" class="primary-btn w-full py-2.5 rounded-lg text-sm font-semibold">Tamamla</button>
+      <button type="button" id="sec-confirm" class="primary-btn w-full py-2.5 rounded-full text-sm font-semibold">Tamamla</button>
     </div>
 
     <p id="sec-error" class="hidden mt-4 text-sm text-error"></p>
-    <p id="sec-hint" class="hidden mt-3 text-xs text-on-surface-variant"></p>
+    <p id="sec-hint" class="hidden mt-3 text-xs text-secondary"></p>
   </div>
 </div>
 
@@ -158,8 +275,8 @@
     el.className =
       "mb-4 px-4 py-3 rounded-xl text-sm border " +
       (ok
-        ? "bg-primary-container/40 border-primary text-on-primary-container"
-        : "bg-red-50 border-red-200 text-error");
+        ? "bg-tertiary-fixed/40 border-on-tertiary-container/40 text-on-tertiary-fixed"
+        : "bg-error-container border-error/30 text-error");
   }
 
   function fill(user) {
@@ -327,6 +444,11 @@
   $("sec-code").addEventListener("keydown", (e) => {
     if (e.key === "Enter") sec.verify();
   });
+
+  if (window.ProfileMenu) {
+    ProfileMenu.mount();
+    ProfileMenu.paintAll();
+  }
 
   load().catch((err) => alertBox(err.message || "Profil yüklenemedi", false));
 </script>

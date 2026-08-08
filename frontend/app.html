@@ -1,29 +1,98 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Çalışma Alanı - Betula</title>
+<title>Çalışma Alanı — Betula</title>
 <style>html:not(.betula-fonts-ready) .material-symbols-outlined{color:transparent!important;max-width:1.35em;overflow:hidden}.material-symbols-outlined{display:inline-block;line-height:1;font-size:1.25em;white-space:nowrap}</style>
-<link rel="icon" type="image/png" href="/static/assets/betula-logo.png"/>
+<link rel="icon" type="image/png" href="/static/assets/betula-mark.png"/>
 <link rel="stylesheet" href="/static/css/boot.css"/>
-<link rel="stylesheet" href="/static/css/betula.css"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="/static/js/boot.js" defer></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary-fixed": "#ffdbd1", "primary-fixed": "#e5e2e1", "surface-container-high": "#e9e8e7",
+        "surface-container-lowest": "#ffffff", "on-primary-fixed": "#1c1b1b", "outline-variant": "#c4c7c7",
+        "on-error": "#ffffff", "surface-container": "#efeded", "surface": "#fbf9f8",
+        "inverse-on-surface": "#f2f0f0", "on-secondary-fixed-variant": "#474744", "primary-fixed-dim": "#c8c6c5",
+        "on-tertiary-fixed-variant": "#862201", "tertiary-fixed-dim": "#ffb5a0", "primary": "#000000",
+        "on-surface-variant": "#444748", "on-secondary-fixed": "#1b1c19", "secondary-fixed": "#e4e2dd",
+        "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#474646", "error": "#ba1a1a",
+        "on-error-container": "#93000a", "on-background": "#1b1c1c", "surface-bright": "#fbf9f8",
+        "tertiary": "#000000", "on-tertiary-container": "#d95d39", "on-secondary-container": "#63635f",
+        "on-primary": "#ffffff", "secondary": "#5e5e5b", "surface-container-highest": "#e4e2e2",
+        "on-primary-container": "#858383", "secondary-container": "#e1dfdb", "error-container": "#ffdad6",
+        "inverse-surface": "#303031", "surface-tint": "#5f5e5e", "on-tertiary-fixed": "#3b0900",
+        "primary-container": "#1c1b1b", "on-secondary": "#ffffff", "inverse-primary": "#c8c6c5",
+        "background": "#fbf9f8", "on-surface": "#1b1c1c", "surface-container-low": "#f5f3f3",
+        "surface-variant": "#e4e2e2", "outline": "#747878", "surface-dim": "#dbdad9",
+        "tertiary-container": "#3b0900", "secondary-fixed-dim": "#c8c6c2"
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: {
+        lg: "48px", xl: "80px", xs: "4px", "container-max": "1280px",
+        sm: "12px", gutter: "24px", base: "8px", md: "24px"
+      },
+      fontFamily: {
+        button: ["Inter"], "body-md": ["Inter"], "label-caps": ["JetBrains Mono"],
+        "label-sm": ["Inter"], "headline-md": ["Plus Jakarta Sans"], "body-lg": ["Inter"],
+        "display-lg": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"]
+      },
+      fontSize: {
+        button: ["14px", { lineHeight: "1.0", letterSpacing: "0.02em", fontWeight: "600" }],
+        "body-md": ["16px", { lineHeight: "1.5", letterSpacing: "0", fontWeight: "400" }],
+        "label-caps": ["12px", { lineHeight: "1.0", letterSpacing: "0.1em", fontWeight: "500" }],
+        "label-sm": ["14px", { lineHeight: "1.0", letterSpacing: "0.02em", fontWeight: "600" }],
+        "headline-md": ["24px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "0", fontWeight: "400" }],
+        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "display-lg-mobile": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "700" }]
+      }
+    }
+  }
+};
+</script>
 <style>
-  body { background-color: #fff8f6; color: #231a14; margin: 0; overflow: hidden; }
-  .glass-panel { background-color: #ffffff; border: 1px solid #d7c2b6; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-  .glass-card { background: #f6ebe6; border: 1px solid #d7c2b6; }
+  html { background: #fbf9f8; }
+  body { margin: 0; overflow: hidden; }
+
+  .gradient-bg {
+    background: linear-gradient(135deg, #fbf9f8 0%, #ffdbd1 100%);
+    opacity: 0.35;
+  }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(196, 199, 199, 0.45);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  }
+  .ambient-shadow { box-shadow: 0 10px 40px -10px rgba(217, 93, 57, 0.15); }
+  .brand-mark { width: 40px; height: 40px; object-fit: contain; }
+
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #ffffff; }
-  ::-webkit-scrollbar-thumb { background: #d7c2b6; border-radius: 8px; }
-  .prose-note h1,.prose-note h2,.prose-note h3 { font-weight: 600; margin: 0.8em 0 0.4em; color: #231a14; }
-  .prose-note h1 { font-size: 1.4rem; } .prose-note h2 { font-size: 1.2rem; } .prose-note h3 { font-size: 1.05rem; }
-  .prose-note p, .prose-note li { color: #52443c; line-height: 1.65; margin-bottom: 0.5em; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #c4c7c7; border-radius: 8px; }
+
+  .prose-note h1, .prose-note h2, .prose-note h3 { font-weight: 600; margin: 0.8em 0 0.4em; color: #1b1c1c; }
+  .prose-note h1 { font-size: 1.4rem; }
+  .prose-note h2 { font-size: 1.2rem; }
+  .prose-note h3 { font-size: 1.05rem; }
+  .prose-note p, .prose-note li { color: #444748; line-height: 1.65; margin-bottom: 0.5em; }
   .prose-note ul { list-style: disc; padding-left: 1.25rem; }
-  .prose-note code { background: #ffdbcb; padding: 0.1rem 0.35rem; border-radius: 0.25rem; font-size: 0.85em; }
-  .nav-active { background: #ffdbcb; color: #3d1000; }
+  .prose-note code { background: #ffdbd1; padding: 0.1rem 0.35rem; border-radius: 0.25rem; font-size: 0.85em; font-family: "JetBrains Mono", monospace; }
+
+  .nav-active {
+    background: #3b0900;
+    color: #ffffff;
+  }
+  .nav-active .material-symbols-outlined { color: #ffffff; }
   .panel-hidden { display: none !important; }
 
   /* Study modal (flashcard / quiz) */
@@ -40,7 +109,7 @@
   .study-modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(34, 26, 22, 0.48);
+    background: rgba(27, 28, 28, 0.48);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
@@ -50,9 +119,9 @@
     width: min(980px, 100%);
     height: min(880px, 92vh);
     background: #ffffff;
-    border: 1px solid #d7c2b6;
+    border: 1px solid #c4c7c7;
     border-radius: 1rem;
-    box-shadow: 0 24px 64px rgba(34, 26, 22, 0.28);
+    box-shadow: 0 24px 64px rgba(27, 28, 28, 0.22);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -69,19 +138,16 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #52443c;
+    color: #444748;
     transition: background 0.15s, color 0.15s;
   }
   .study-modal-close:hover {
-    background: #f6ebe6;
-    color: #c2652a;
+    background: #efeded;
+    color: #d95d39;
   }
 
   /* Flashcard 3D flip */
-  .fc-scene {
-    perspective: 1200px;
-    width: 100%;
-  }
+  .fc-scene { perspective: 1200px; width: 100%; }
   .fc-card {
     display: grid;
     width: 100%;
@@ -90,15 +156,13 @@
     transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
     cursor: pointer;
   }
-  .fc-card.is-flipped {
-    transform: rotateY(180deg);
-  }
+  .fc-card.is-flipped { transform: rotateY(180deg); }
   .fc-face {
     grid-area: 1 / 1;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 0.75rem;
-    border: 1px solid #d7c2b6;
+    border: 1px solid #c4c7c7;
     background: #ffffff;
     padding: 1.5rem;
     display: flex;
@@ -107,23 +171,21 @@
     min-height: 200px;
     box-sizing: border-box;
   }
-  .fc-face:hover { border-color: #c2652a; }
-  .fc-face-back {
-    transform: rotateY(180deg);
-    background: #fcf1ec;
-  }
+  .fc-face:hover { border-color: #d95d39; }
+  .fc-face-back { transform: rotateY(180deg); background: #f5f3f3; }
   .fc-face-label {
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #52443c;
+    color: #444748;
     margin-bottom: 0.75rem;
     font-weight: 500;
+    font-family: "JetBrains Mono", monospace;
   }
   .fc-face-text {
     font-size: 16px;
     line-height: 1.6;
-    color: #231a14;
+    color: #1b1c1c;
     white-space: pre-wrap;
     word-break: break-word;
   }
@@ -139,12 +201,12 @@
   }
   .quiz-grow-word {
     display: flex; align-items: baseline; gap: 0.02em;
-    font-family: "Manrope", "Segoe UI", sans-serif;
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
     font-weight: 700;
     font-size: 42px;
     letter-spacing: -0.04em;
     line-height: 1;
-    color: #c2652a;
+    color: #d95d39;
   }
   .quiz-grow-word .ch {
     display: inline-block;
@@ -159,31 +221,22 @@
   .quiz-grow-word .ch:nth-child(4) { animation-delay: 0.36s; }
   .quiz-grow-word .ch:nth-child(5) { animation-delay: 0.48s; }
   .quiz-grow-word .ch:nth-child(6) { animation-delay: 0.6s; }
-
   .quiz-grow-logo {
     width: 52px; height: 52px;
     opacity: 0;
     transform: scale(0.5) rotate(-8deg);
     animation: betula-logo-pop 4.8s cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
   }
-  .quiz-grow-logo img {
-    width: 100%; height: 100%; object-fit: contain;
-    display: block;
-  }
-
+  .quiz-grow-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .quiz-grow-label {
-    font-size: 14px; color: #52443c; letter-spacing: 0.02em;
+    font-size: 14px; color: #444748; letter-spacing: 0.02em;
     animation: quiz-pulse 1.6s ease-in-out infinite;
   }
-  .quiz-grow-dots span {
-    opacity: 0;
-    animation: quiz-dot 1.4s infinite;
-  }
+  .quiz-grow-dots span { opacity: 0; animation: quiz-dot 1.4s infinite; }
   .quiz-grow-dots span:nth-child(1) { animation-delay: 0s; }
   .quiz-grow-dots span:nth-child(2) { animation-delay: 0.2s; }
   .quiz-grow-dots span:nth-child(3) { animation-delay: 0.4s; }
 
-  /* 0–35% harfler sırayla · 40–78% logo + yazı durur · 85–100% silinir, baştan */
   @keyframes betula-char {
     0%   { opacity: 0; transform: translateY(14px) scale(0.85); filter: blur(4px); }
     12%  { opacity: 1; transform: translateY(0) scale(1.06); filter: blur(0); }
@@ -200,14 +253,8 @@
     90%     { opacity: 0; transform: scale(0.7) rotate(6deg); }
     100%    { opacity: 0; transform: scale(0.5) rotate(-8deg); }
   }
-  @keyframes quiz-pulse {
-    0%, 100% { opacity: 0.55; }
-    50% { opacity: 1; }
-  }
-  @keyframes quiz-dot {
-    0%, 20% { opacity: 0; }
-    40%, 100% { opacity: 1; }
-  }
+  @keyframes quiz-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+  @keyframes quiz-dot { 0%, 20% { opacity: 0; } 40%, 100% { opacity: 1; } }
 
   /* Kaynak derleme — bulanık katman */
   .compile-overlay {
@@ -217,39 +264,30 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 248, 246, 0.45);
+    background: rgba(251, 249, 248, 0.55);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     transition: opacity 0.35s ease;
   }
   .compile-overlay.hidden { display: none; }
-  .compile-overlay-card {
-    text-align: center;
-    padding: 1.75rem 2rem;
-    max-width: 380px;
-  }
+  .compile-overlay-card { text-align: center; padding: 1.75rem 2rem; max-width: 380px; }
   .compile-overlay-title {
-    font-family: "Manrope", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 17px;
     font-weight: 600;
-    color: #221a16;
+    color: #1b1c1c;
     margin: 0 0 0.35rem;
     min-height: 1.4em;
     animation: compile-msg-in 0.4s ease;
   }
-  .compile-overlay-sub {
-    font-size: 13px;
-    color: #52443c;
-    margin: 0 0 1rem;
-    opacity: 0.85;
-  }
+  .compile-overlay-sub { font-size: 13px; color: #444748; margin: 0 0 1rem; opacity: 0.85; }
   .compile-tips {
     text-align: left;
     min-height: 5.4em;
     padding: 0.85rem 1rem;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(215, 194, 185, 0.7);
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(196, 199, 199, 0.6);
   }
   .compile-tips-label {
     display: block;
@@ -257,14 +295,15 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #c2652a;
+    color: #d95d39;
     margin-bottom: 0.45rem;
+    font-family: "JetBrains Mono", monospace;
   }
   .compile-tips-text {
     margin: 0;
     font-size: 13px;
     line-height: 1.55;
-    color: #52443c;
+    color: #444748;
     animation: compile-tip-in 0.45s ease;
   }
   .compile-overlay-bar {
@@ -272,7 +311,7 @@
     width: 160px;
     height: 3px;
     border-radius: 999px;
-    background: #f4ded5;
+    background: #ffdbd1;
     overflow: hidden;
   }
   .compile-overlay-bar > span {
@@ -280,7 +319,7 @@
     height: 100%;
     width: 40%;
     border-radius: 999px;
-    background: #c2652a;
+    background: #d95d39;
     animation: compile-bar 1.2s ease-in-out infinite;
   }
   @keyframes compile-bar {
@@ -302,7 +341,7 @@
     --sidebar-min: 208px;
     --sidebar-max: 256px;
     --master-panel-w: 320px;
-    --master-w: 320px; /* profil dock offset; kapalıyken 0 */
+    --master-w: 320px;
   }
   #app-sidebar {
     position: fixed;
@@ -322,9 +361,7 @@
     opacity: 0;
     pointer-events: none;
   }
-  #app-sidebar.is-resizing {
-    transition: none !important;
-  }
+  #app-sidebar.is-resizing { transition: none !important; }
   #app-main {
     margin-left: 0;
     margin-right: 0;
@@ -338,16 +375,10 @@
       margin-left: var(--sidebar-w);
       margin-right: var(--master-panel-w);
     }
-    #app-main.is-sidebar-collapsed {
-      margin-left: 0 !important;
-    }
-    #app-main.is-master-collapsed {
-      margin-right: 0 !important;
-    }
+    #app-main.is-sidebar-collapsed { margin-left: 0 !important; }
+    #app-main.is-master-collapsed { margin-right: 0 !important; }
   }
-  #app-main.is-resizing {
-    transition: none !important;
-  }
+  #app-main.is-resizing { transition: none !important; }
   .sidebar-resizer {
     position: absolute;
     top: 0;
@@ -360,11 +391,9 @@
   }
   .sidebar-resizer:hover,
   #app-sidebar.is-resizing .sidebar-resizer {
-    background: rgba(194, 101, 42, 0.35);
+    background: rgba(217, 93, 57, 0.35);
   }
-  #app-sidebar.is-collapsed .sidebar-resizer {
-    display: none;
-  }
+  #app-sidebar.is-collapsed .sidebar-resizer { display: none; }
   .sidebar-toggle {
     position: fixed;
     top: 50%;
@@ -374,33 +403,26 @@
     width: 22px;
     height: 56px;
     border-radius: 999px;
-    border: 1px solid #d7c2b6;
+    border: 1px solid #c4c7c7;
     background: #ffffff;
-    color: #52443c;
-    box-shadow: 0 4px 14px rgba(34, 26, 22, 0.12);
+    color: #444748;
+    box-shadow: 0 4px 14px rgba(27, 28, 28, 0.1);
     display: none;
     align-items: center;
     justify-content: center;
     transition: left 0.22s ease, background 0.15s, color 0.15s;
   }
-  @media (min-width: 768px) {
-    .sidebar-toggle { display: inline-flex; }
-  }
-  .sidebar-toggle:hover {
-    background: #ffdbcb;
-    color: #c2652a;
-  }
+  @media (min-width: 768px) { .sidebar-toggle { display: inline-flex; } }
+  .sidebar-toggle:hover { background: #ffdbd1; color: #d95d39; }
   .sidebar-toggle.is-collapsed {
     left: 0;
     transform: translate(0, -50%);
     border-radius: 0 999px 999px 0;
     width: 20px;
   }
-  .sidebar-toggle .material-symbols-outlined {
-    font-size: 18px;
-  }
+  .sidebar-toggle .material-symbols-outlined { font-size: 18px; }
 
-  /* Sağ: Master Sentez — sabit panel; kapalıyken main margin sıfırlanır */
+  /* Sağ: Master Sentez — sabit panel */
   #master-panel {
     position: fixed;
     right: 0;
@@ -413,9 +435,7 @@
     transition: width 0.22s ease;
     overflow: hidden;
   }
-  @media (min-width: 768px) {
-    #master-panel { display: flex; }
-  }
+  @media (min-width: 768px) { #master-panel { display: flex; } }
   #master-panel.is-collapsed {
     width: 0 !important;
     border-left-width: 0 !important;
@@ -437,14 +457,10 @@
   }
   .master-resizer:hover,
   #master-panel.is-resizing .master-resizer {
-    background: rgba(194, 101, 42, 0.35);
+    background: rgba(217, 93, 57, 0.35);
   }
-  #master-panel.is-collapsed .master-resizer {
-    display: none;
-  }
-  #master-panel.is-resizing {
-    transition: none !important;
-  }
+  #master-panel.is-collapsed .master-resizer { display: none; }
+  #master-panel.is-resizing { transition: none !important; }
   .master-toggle {
     position: fixed;
     top: 50%;
@@ -454,31 +470,25 @@
     width: 22px;
     height: 56px;
     border-radius: 999px;
-    border: 1px solid #d7c2b6;
+    border: 1px solid #c4c7c7;
     background: #ffffff;
-    color: #52443c;
-    box-shadow: 0 4px 14px rgba(34, 26, 22, 0.12);
+    color: #444748;
+    box-shadow: 0 4px 14px rgba(27, 28, 28, 0.1);
     display: none;
     align-items: center;
     justify-content: center;
     transition: right 0.22s ease, background 0.15s, color 0.15s;
   }
-  @media (min-width: 768px) {
-    .master-toggle { display: inline-flex; }
-  }
-  .master-toggle:hover {
-    background: #ffdbcb;
-    color: #c2652a;
-  }
+  @media (min-width: 768px) { .master-toggle { display: inline-flex; } }
+  .master-toggle:hover { background: #ffdbd1; color: #d95d39; }
   .master-toggle.is-collapsed {
     right: 0;
     transform: translate(0, -50%);
     border-radius: 999px 0 0 999px;
     width: 20px;
   }
-  .master-toggle .material-symbols-outlined {
-    font-size: 18px;
-  }
+  .master-toggle .material-symbols-outlined { font-size: 18px; }
+
   .workspace-split {
     flex: 1 1 auto;
     display: flex;
@@ -495,17 +505,16 @@
     min-width: 0;
   }
   @media (max-width: 900px) {
-    .workspace-split {
-      flex-direction: column;
-    }
-    .workspace-split > .glass-panel {
-      width: auto;
-      min-height: 0;
-    }
+    .workspace-split { flex-direction: column; }
+    .workspace-split > .glass-panel { width: auto; min-height: 0; }
   }
 </style>
 </head>
-<body class="h-screen w-screen flex font-body-md text-body-md text-on-background bg-background">
+<body class="h-screen w-screen flex font-body-md text-body-md text-on-background bg-background relative">
+
+<div class="absolute inset-0 z-0 pointer-events-none gradient-bg"></div>
+<div class="absolute -top-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-tertiary-fixed-dim/20 blur-[100px] z-0 pointer-events-none"></div>
+
 <input type="file" id="file-input" accept=".pdf,.docx,.doc" class="hidden"/>
 
 <!-- Sürüklenebilir profil (yalnızca foto) -->
@@ -520,88 +529,100 @@
   <span class="material-symbols-outlined" id="master-toggle-icon">chevron_right</span>
 </button>
 
-<aside id="master-panel" class="bg-surface-container-lowest border-l border-outline-variant shadow-sm overflow-hidden">
+<!-- Master Sentez — sabit sağ panel -->
+<aside id="master-panel" class="bg-surface-container-lowest border-l border-outline-variant/60 shadow-lg shadow-primary/5 overflow-hidden">
   <div id="master-resizer" class="master-resizer" title="Genişliği ayarla" aria-hidden="true"></div>
-  <div class="p-4 border-b border-outline-variant flex items-center justify-between shrink-0">
+  <div class="p-4 border-b border-outline-variant/40 flex items-center justify-between shrink-0 bg-white/60">
     <h2 class="font-label-sm text-label-sm text-primary uppercase tracking-widest flex items-center gap-2 font-semibold">
-      <span class="material-symbols-outlined text-[16px]">auto_awesome</span> Master Sentez
+      <span class="material-symbols-outlined text-[16px] text-on-tertiary-container">auto_awesome</span>
+      Master Sentez
     </h2>
     <div id="export-master-wrap" class="relative hidden">
-      <button type="button" id="btn-download-note" class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container" title="İndir">
+      <button type="button" id="btn-download-note" class="text-on-surface-variant hover:text-on-tertiary-container p-1.5 rounded-lg hover:bg-surface-container transition-colors" title="İndir">
         <span class="material-symbols-outlined text-[18px]">download</span>
       </button>
       <div id="export-master-menu" class="hidden absolute right-0 top-full mt-1 z-20 w-52 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl py-1 text-sm">
-        <p class="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wider text-on-surface-variant">Master Sentez</p>
-        <button type="button" data-export-master="note:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Sentez — Word</button>
-        <button type="button" data-export-master="note:pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">Sentez — PDF</button>
-        <p class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-on-surface-variant border-t border-outline-variant mt-1">Eksik bilgiler</p>
-        <button type="button" data-export-master="gaps:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Eksikler — Word</button>
-        <button type="button" data-export-master="gaps:pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">Eksikler — PDF</button>
-        <button type="button" data-export-master="full:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container border-t border-outline-variant mt-1">Hepsi — Word</button>
+        <p class="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wider text-on-surface-variant font-label-caps">Master Sentez</p>
+        <button type="button" data-export-master="note:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container transition-colors">Sentez — Word</button>
+        <button type="button" data-export-master="note:pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container transition-colors">Sentez — PDF</button>
+        <p class="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-on-surface-variant border-t border-outline-variant/40 mt-1 font-label-caps">Eksik bilgiler</p>
+        <button type="button" data-export-master="gaps:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container transition-colors">Eksikler — Word</button>
+        <button type="button" data-export-master="gaps:pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container transition-colors">Eksikler — PDF</button>
+        <button type="button" data-export-master="full:docx" class="w-full text-left px-3 py-2 hover:bg-surface-container transition-colors border-t border-outline-variant/40 mt-1">Hepsi — Word</button>
       </div>
     </div>
   </div>
   <div id="synthesis-list" class="p-4 flex-1 overflow-y-auto min-h-0">
-    <div class="text-[12px] text-on-surface-variant uppercase tracking-wider mb-3 pb-1 border-b border-outline-variant font-medium">Eksikler / Gaps</div>
+    <div class="text-[11px] text-on-surface-variant uppercase tracking-wider mb-3 pb-1 border-b border-outline-variant/40 font-label-caps font-medium">Eksikler / Gaps</div>
     <ul id="gap-list" class="space-y-3">
       <li class="text-sm text-on-surface-variant">Henüz gap yok.</li>
     </ul>
   </div>
 </aside>
 
-<nav id="app-sidebar" class="fixed left-0 top-0 h-full z-40 bg-surface-container-lowest border-r border-outline-variant flex flex-col py-6 gap-3 hidden md:flex shadow-sm overflow-hidden">
+<!-- Sol sidebar -->
+<nav id="app-sidebar" class="fixed left-0 top-0 h-full z-40 bg-surface-container-low border-r border-outline-variant/30 flex flex-col py-md gap-2 hidden md:flex shadow-lg shadow-primary/5 overflow-hidden">
   <div id="sidebar-resizer" class="sidebar-resizer" title="Genişliği ayarla" aria-hidden="true"></div>
-  <div class="px-6 mb-2 flex items-center gap-3 shrink-0">
-    <a href="/oturumlar" class="w-10 h-10 rounded-lg overflow-hidden border border-outline-variant shrink-0">
-      <img src="/static/assets/betula-logo.png" alt="Betula" class="w-full h-full object-cover"/>
+
+  <div class="px-gutter mb-2 flex items-center gap-sm shrink-0">
+    <a href="/oturumlar" class="flex items-center gap-2 min-w-0 group" title="Oturumlara dön">
+      <span class="material-symbols-outlined text-[36px] text-on-tertiary-container shrink-0 group-hover:opacity-80 transition-opacity" style="font-variation-settings: 'FILL' 1;">eco</span>
+      <div class="min-w-0">
+        <h1 class="font-headline-md text-[18px] text-tertiary-container tracking-tight leading-tight">Betula</h1>
+        <span id="session-label" class="font-label-caps text-label-caps text-on-surface-variant uppercase truncate block mt-0.5">Oturum</span>
+      </div>
     </a>
-    <div class="min-w-0">
-      <h1 class="text-[18px] font-semibold text-on-background tracking-tighter">Betula</h1>
-      <span id="session-label" class="font-label-sm text-label-sm text-on-surface-variant uppercase truncate block">Oturum</span>
-    </div>
   </div>
 
   <!-- Ana menü -->
-  <div id="nav-main" class="flex-1 flex flex-col min-h-0 overflow-y-auto px-0">
-    <div class="px-6 mb-2 shrink-0">
-      <button id="btn-new-upload" class="w-full py-2 px-4 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-sm">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+  <div id="nav-main" class="flex-1 flex flex-col min-h-0 overflow-y-auto">
+    <div class="px-gutter mb-3 shrink-0">
+      <button id="btn-new-upload" class="w-full bg-on-tertiary-container text-on-tertiary font-label-sm text-label-sm py-sm px-md rounded-lg flex items-center justify-center gap-xs hover:opacity-90 active:scale-[0.98] transition-all ambient-shadow">
+        <span class="material-symbols-outlined text-[18px]">add</span>
         Yeni Kaynak
       </button>
     </div>
-    <ul class="flex-1 flex flex-col gap-1 px-4 pb-2">
-      <li><button type="button" id="btn-open-sources" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
-        <span class="material-symbols-outlined group-hover:text-primary">description</span>
-        <span class="font-label-sm text-label-sm">Kaynaklar</span>
-      </button></li>
-      <li><button data-view="notes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg nav-active mx-0 font-medium text-left">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_note</span>
-        <span class="font-label-sm text-label-sm">Özet</span>
-      </button></li>
-      <li><button data-view="flashcards" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
-        <span class="material-symbols-outlined group-hover:text-primary">style</span>
-        <span class="font-label-sm text-label-sm flex-1 text-left">Flashcards</span>
-        <span id="fc-count" class="text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">0</span>
-      </button></li>
-      <li><button data-view="quiz" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
-        <span class="material-symbols-outlined group-hover:text-primary">quiz</span>
-        <span class="font-label-sm text-label-sm">Quiz</span>
-      </button></li>
-      <li class="mt-auto">
-        <a href="/oturumlar" class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group">
-          <span class="material-symbols-outlined group-hover:text-primary">swap_horiz</span>
+    <ul class="flex-1 flex flex-col gap-0.5 px-sm pb-2">
+      <li>
+        <button type="button" id="btn-open-sources" class="nav-btn w-full flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all group text-left">
+          <span class="material-symbols-outlined text-[20px] group-hover:text-on-tertiary-container">description</span>
+          <span class="font-label-sm text-label-sm">Kaynaklar</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" data-view="notes" class="nav-btn w-full flex items-center gap-sm px-4 py-3 rounded-lg nav-active text-left">
+          <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+          <span class="font-label-sm text-label-sm">Özet</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" data-view="flashcards" class="nav-btn w-full flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all group text-left">
+          <span class="material-symbols-outlined text-[20px] group-hover:text-on-tertiary-container">style</span>
+          <span class="font-label-sm text-label-sm flex-1 text-left">Flashcards</span>
+          <span id="fc-count" class="text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/50 font-label-caps">0</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" data-view="quiz" class="nav-btn w-full flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all group text-left">
+          <span class="material-symbols-outlined text-[20px] group-hover:text-on-tertiary-container">quiz</span>
+          <span class="font-label-sm text-label-sm">Quiz</span>
+        </button>
+      </li>
+      <li class="mt-auto pt-2 border-t border-outline-variant/20 mx-2">
+        <a href="/oturumlar" class="flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all group">
+          <span class="material-symbols-outlined text-[20px] group-hover:text-on-tertiary-container">swap_horiz</span>
           <span class="font-label-sm text-label-sm">Oturumlar</span>
         </a>
       </li>
       <li>
-        <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group">
-          <span class="material-symbols-outlined group-hover:text-primary">home</span>
+        <a href="/" class="flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all group">
+          <span class="material-symbols-outlined text-[20px] group-hover:text-on-tertiary-container">home</span>
           <span class="font-label-sm text-label-sm">Ana Sayfa</span>
         </a>
       </li>
       <li>
-        <button id="btn-logout" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all group text-left">
-          <span class="material-symbols-outlined group-hover:text-primary">logout</span>
+        <button type="button" id="btn-logout" class="w-full flex items-center gap-sm px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all group text-left">
+          <span class="material-symbols-outlined text-[20px] group-hover:text-on-tertiary-container">logout</span>
           <span class="font-label-sm text-label-sm">Çıkış</span>
         </button>
       </li>
@@ -611,50 +632,50 @@
   <!-- Kaynaklar (sol panel içi) -->
   <div id="nav-sources" class="hidden flex-1 flex-col min-h-0 px-3">
     <div class="flex items-center gap-1 shrink-0 mb-2 px-1">
-      <button type="button" id="btn-sources-back" class="flex items-center gap-1 text-on-surface-variant hover:text-primary px-2 py-1.5 rounded-lg hover:bg-surface-container transition-colors" title="Menüye dön">
+      <button type="button" id="btn-sources-back" class="flex items-center gap-1 text-on-surface-variant hover:text-on-tertiary-container px-2 py-1.5 rounded-lg hover:bg-surface-container-highest transition-colors" title="Menüye dön">
         <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-        <span class="text-xs font-medium uppercase tracking-wider">Geri</span>
+        <span class="text-xs font-medium uppercase tracking-wider font-label-caps">Geri</span>
       </button>
-      <button type="button" id="btn-add-source" class="ml-auto text-on-surface-variant hover:text-primary p-1.5 rounded-lg hover:bg-surface-container" title="Kaynak ekle">
+      <button type="button" id="btn-add-source" class="ml-auto text-on-surface-variant hover:text-on-tertiary-container p-1.5 rounded-lg hover:bg-surface-container-highest transition-colors" title="Kaynak ekle">
         <span class="material-symbols-outlined text-[20px]">add_circle</span>
       </button>
     </div>
-    <p class="px-2 mb-2 text-[11px] uppercase tracking-wider text-on-surface-variant font-medium shrink-0">Kaynaklar</p>
+    <p class="px-2 mb-2 text-[11px] uppercase tracking-wider text-on-surface-variant font-label-caps font-medium shrink-0">Kaynaklar</p>
     <div id="sources-list" class="flex-1 overflow-y-auto flex flex-col gap-2 pb-4 pr-1">
       <p class="text-sm text-on-surface-variant px-2">Henüz kaynak yok. Ana menüden Yeni Kaynak ile yükle.</p>
     </div>
   </div>
 </nav>
 
-<main id="app-main" class="flex-1 h-full p-4 md:p-6 flex gap-4 overflow-hidden bg-background">
-  <!-- Özet + Chat (yan yana, eşit) -->
-  <div class="workspace-split relative">
+<!-- Ana çalışma alanı -->
+<main id="app-main" class="relative z-10 flex-1 h-full p-4 md:p-5 flex gap-4 overflow-hidden">
+  <div class="workspace-split relative w-full">
     <!-- Özet / Notlar -->
-    <div id="panel-notes" class="glass-panel rounded-lg flex flex-col overflow-hidden relative shadow-sm min-h-0">
-      <div class="h-12 border-b border-outline-variant flex items-center justify-between px-4 shrink-0">
+    <div id="panel-notes" class="glass-panel rounded-xl flex flex-col overflow-hidden relative min-h-0">
+      <div class="h-12 border-b border-outline-variant/40 flex items-center justify-between px-4 shrink-0 bg-white/50">
         <div class="flex items-center gap-3 min-w-0">
-          <span class="material-symbols-outlined text-primary text-[18px]">auto_stories</span>
-          <span id="doc-title" class="font-label-sm text-label-sm font-semibold tracking-wider text-on-surface truncate">Özet</span>
+          <span class="material-symbols-outlined text-on-tertiary-container text-[18px]">auto_stories</span>
+          <span id="doc-title" class="font-label-sm text-label-sm font-semibold tracking-wide text-on-surface truncate">Özet</span>
         </div>
         <div class="flex items-center gap-2">
-          <span id="job-status" class="text-[11px] px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant hidden"></span>
+          <span id="job-status" class="text-[11px] px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/50 hidden font-label-caps"></span>
           <div id="export-note-wrap" class="relative hidden">
-            <button type="button" id="btn-export-note" class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container" title="Özeti indir">
+            <button type="button" id="btn-export-note" class="text-on-surface-variant hover:text-on-tertiary-container p-1.5 rounded-lg hover:bg-surface-container transition-colors" title="Özeti indir">
               <span class="material-symbols-outlined text-[18px]">download</span>
             </button>
             <div id="export-note-menu" class="hidden absolute right-0 top-full mt-1 z-20 w-44 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl py-1 text-sm">
-              <button type="button" data-export-note="docx" class="w-full text-left px-3 py-2 hover:bg-surface-container">Word</button>
-              <button type="button" data-export-note="pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container">PDF</button>
-              <button type="button" data-export-note="md" class="w-full text-left px-3 py-2 hover:bg-surface-container">Markdown</button>
+              <button type="button" data-export-note="docx" class="w-full text-left px-3 py-2 hover:bg-surface-container transition-colors">Word</button>
+              <button type="button" data-export-note="pdf" class="w-full text-left px-3 py-2 hover:bg-surface-container transition-colors">PDF</button>
+              <button type="button" data-export-note="md" class="w-full text-left px-3 py-2 hover:bg-surface-container transition-colors">Markdown</button>
             </div>
           </div>
-          <button id="btn-compile" class="text-xs uppercase tracking-wider px-3 py-1 rounded-full border border-primary text-primary hover:bg-primary-container disabled:opacity-40" disabled>Derle</button>
+          <button id="btn-compile" class="text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border border-on-tertiary-container text-on-tertiary-container hover:bg-on-tertiary-container hover:text-on-tertiary transition-colors disabled:opacity-40 font-label-caps" disabled>Derle</button>
         </div>
       </div>
-      <div id="note-content" class="flex-1 bg-surface-container-low p-6 md:p-8 overflow-y-auto min-h-0">
-        <div class="max-w-3xl mx-auto bg-surface-container-lowest border border-outline-variant rounded-lg p-8 shadow-md prose-note">
-          <h2 class="font-headline-lg text-[24px] mb-4 text-on-surface">Hoş geldin</h2>
-          <p class="text-on-surface-variant">Sol menüden Kaynaklar’a girip PDF/DOCX seç veya Yeni Kaynak yükle. Derleme bitince özet burada görünür.</p>
+      <div id="note-content" class="flex-1 bg-surface-container-low/50 p-6 md:p-8 overflow-y-auto min-h-0">
+        <div class="max-w-3xl mx-auto bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-8 shadow-sm prose-note">
+          <h2 class="font-headline-md text-headline-md mb-4 text-on-surface">Hoş geldin</h2>
+          <p class="text-on-surface-variant font-body-md">Sol menüden Kaynaklar'a girip PDF/DOCX seç veya Yeni Kaynak yükle. Derleme bitince özet burada görünür.</p>
         </div>
       </div>
       <div id="compile-overlay" class="compile-overlay hidden" aria-live="polite" aria-busy="true">
@@ -671,22 +692,23 @@
     </div>
 
     <!-- Core AI Chat -->
-    <div id="panel-chat" class="glass-panel rounded-lg flex flex-col relative overflow-hidden shadow-sm min-h-0">
-      <div class="p-3 border-b border-outline-variant flex items-center gap-2 shrink-0">
-        <span class="material-symbols-outlined text-primary text-[16px]">robot_2</span>
+    <div id="panel-chat" class="glass-panel rounded-xl flex flex-col relative overflow-hidden min-h-0">
+      <div class="p-3 border-b border-outline-variant/40 flex items-center gap-2 shrink-0 bg-white/50">
+        <span class="material-symbols-outlined text-on-tertiary-container text-[16px]">robot_2</span>
         <div class="min-w-0 flex-1">
-          <span class="font-label-sm text-label-sm text-primary uppercase tracking-widest font-semibold">Core AI Chat</span>
+          <span class="font-label-sm text-label-sm text-primary uppercase tracking-widest font-semibold">AI Sohbet</span>
         </div>
-        <span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container text-[10px] font-mono border border-outline-variant flex items-center gap-1 shrink-0">
-          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Groq
+        <span class="px-2 py-0.5 rounded-full bg-tertiary-fixed/60 text-on-tertiary-fixed text-[10px] font-label-caps border border-outline-variant/30 flex items-center gap-1 shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container animate-pulse"></span>
+          Groq
         </span>
       </div>
       <div id="chat-messages" class="flex-1 p-4 overflow-y-auto flex flex-col gap-4 min-h-0"></div>
-      <div class="p-3 border-t border-outline-variant shrink-0">
-        <form id="chat-form" class="relative flex items-center bg-surface-container rounded-lg border border-outline-variant focus-within:border-primary transition-all px-3 py-2">
+      <div class="p-3 border-t border-outline-variant/40 shrink-0 bg-white/40">
+        <form id="chat-form" class="relative flex items-center bg-surface-container/80 rounded-xl border border-outline-variant/50 focus-within:border-on-tertiary-container transition-all px-3 py-2">
           <span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-2">temp_preferences_custom</span>
           <input id="chat-input" class="flex-1 bg-transparent border-none focus:ring-0 text-[14px] text-on-surface placeholder:text-on-surface-variant outline-none" placeholder="Kaynaklar hakkında sor..." type="text" autocomplete="off"/>
-          <button type="submit" class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center hover:opacity-90 shadow-sm">
+          <button type="submit" class="w-8 h-8 rounded-lg bg-on-tertiary-container text-on-tertiary flex items-center justify-center hover:opacity-90 shadow-sm transition-opacity">
             <span class="material-symbols-outlined text-[16px]">send</span>
           </button>
         </form>
@@ -699,16 +721,16 @@
 <div id="modal-flashcards" class="study-modal is-hidden" aria-hidden="true">
   <div class="study-modal-backdrop" data-close-study="1"></div>
   <div class="study-modal-panel" role="dialog" aria-modal="true" aria-labelledby="fc-modal-title">
-    <div class="p-4 md:px-6 border-b border-outline-variant flex items-center justify-between gap-3 shrink-0">
+    <div class="p-4 md:px-6 border-b border-outline-variant/40 flex items-center justify-between gap-3 shrink-0 bg-white/70">
       <h2 id="fc-modal-title" class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Flashcards</h2>
       <div class="flex items-center gap-2">
-        <button id="btn-gen-cards" class="text-xs uppercase tracking-wider px-3 py-1.5 rounded-full bg-primary text-on-primary">Üret</button>
+        <button id="btn-gen-cards" class="text-xs uppercase tracking-wider px-3 py-1.5 rounded-full bg-on-tertiary-container text-on-tertiary font-label-caps hover:opacity-90 transition-opacity">Üret</button>
         <button type="button" class="study-modal-close" data-close-study="1" title="Kapat" aria-label="Kapat">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
     </div>
-    <div id="flashcard-area" class="flex-1 p-6 md:p-8 overflow-y-auto flex flex-col items-center justify-center gap-4 min-h-0 bg-surface-container-low">
+    <div id="flashcard-area" class="flex-1 p-6 md:p-8 overflow-y-auto flex flex-col items-center justify-center gap-4 min-h-0 bg-surface-container-low/60">
       <p class="text-on-surface-variant text-sm">Tekrar edilecek kart yok. Önce not derle, sonra üret.</p>
     </div>
   </div>
@@ -718,24 +740,24 @@
 <div id="modal-quiz" class="study-modal is-hidden" aria-hidden="true">
   <div class="study-modal-backdrop" data-close-study="1"></div>
   <div class="study-modal-panel" role="dialog" aria-modal="true" aria-labelledby="quiz-modal-title">
-    <div class="p-4 md:px-6 border-b border-outline-variant flex items-center justify-between gap-3 shrink-0">
+    <div class="p-4 md:px-6 border-b border-outline-variant/40 flex items-center justify-between gap-3 shrink-0 bg-white/70">
       <h2 id="quiz-modal-title" class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Quiz</h2>
       <div class="flex items-center gap-2">
-        <button id="btn-quiz-archive" class="text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors">Arşiv</button>
-        <button id="btn-quiz-new" class="text-xs uppercase tracking-wider px-3 py-1.5 rounded-full bg-primary text-on-primary">Yeni Quiz</button>
+        <button id="btn-quiz-archive" class="text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant hover:border-on-tertiary-container hover:text-on-tertiary-container transition-colors font-label-caps">Arşiv</button>
+        <button id="btn-quiz-new" class="text-xs uppercase tracking-wider px-3 py-1.5 rounded-full bg-on-tertiary-container text-on-tertiary font-label-caps hover:opacity-90 transition-opacity">Yeni Quiz</button>
         <button type="button" class="study-modal-close" data-close-study="1" title="Kapat" aria-label="Kapat">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
     </div>
-    <div id="quiz-area" class="flex-1 p-6 md:p-8 overflow-y-auto min-h-0 bg-surface-container-low">
+    <div id="quiz-area" class="flex-1 p-6 md:p-8 overflow-y-auto min-h-0 bg-surface-container-low/60">
       <p class="text-on-surface-variant text-sm">Quiz henüz hazır değil.</p>
     </div>
   </div>
 </div>
 
 <!-- Toast -->
-<div id="toast" class="fixed bottom-6 right-6 z-50 hidden px-4 py-3 rounded-lg bg-on-surface text-surface text-sm shadow-lg max-w-sm"></div>
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden px-4 py-3 rounded-xl bg-on-background text-white text-sm shadow-lg max-w-sm"></div>
 
 <script src="/static/js/api.js"></script>
 <script src="/static/js/profile.js"></script>
