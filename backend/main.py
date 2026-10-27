@@ -132,13 +132,10 @@ def health():
 
 @app.get("/models")
 def models():
-    from backend.llm import FAST_MODEL, QUALITY_MODEL, default_model_name
+    from backend.llm import available_models, default_model_name
 
     return {
         "default": default_model_name(),
         "provider": "groq",
-        "models": [
-            {"id": QUALITY_MODEL, "label": "Llama 3.3 70B (kalite)"},
-            {"id": FAST_MODEL, "label": "Llama 3.1 8B (hizli)"},
-        ],
+        "models": available_models(),
     }

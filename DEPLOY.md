@@ -97,6 +97,7 @@ SMTP yokken `DEBUG=true` ise kod konsola yazılır ve API yanıtında `dev_code`
 
 Client ID yoksa butonlar gizlenir; e-posta/şifre girişi çalışmaya devam eder.
 
+## Güncelleme
 
 1. `git pull`
 2. `docker compose build`
@@ -104,3 +105,18 @@ Client ID yoksa butonlar gizlenir; e-posta/şifre girişi çalışmaya devam ede
 4. `/health` kontrol
 
 Veri `/data` volume’unda kalır; rebuild DB’yi silmez.
+
+Sayfa ve bölüm bilgisi gelmeden önce yüklenmiş belgeler varsa vektör indekslerini bir kez yenileyin
+(eski indeks `.bak-<zaman>` olarak yedeklenir):
+
+```bash
+docker compose exec betula python scripts/reindex_vectorstores.py --dry-run
+docker compose exec betula python scripts/reindex_vectorstores.py
+```
+
+## LLM modelleri
+
+Varsayılanlar: `GROQ_MODEL=openai/gpt-oss-120b` (sohbet, eksik analizi, sentez, quiz) ve
+`GROQ_FAST_MODEL=openai/gpt-oss-20b` (hafıza, web özetleri, başlıklar). Groq modelleri zamanla
+kaldırabilir; `/health` cevabındaki model ile https://console.groq.com/docs/models listesini karşılaştırın.
+Her LLM çağrısı `model_calls` tablosuna amaç (`purpose`), token ve süre ile yazılır.

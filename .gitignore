@@ -17,9 +17,13 @@ __pycache__/
 htmlcov/
 
 # Çalışma zamanı verisi (kullanıcı verisi repoya girmez)
-data/
-uploads/
-vectorstore/
+/data/
+/uploads/
+/vectorstore/
+
+# Değerlendirme: telifli kaynaklar ve yeniden üretilebilen çıktılar
+evaluation/data/private/
+evaluation/data/generated/
 *.db
 *.db-journal
 *.db-wal
@@ -32,6 +36,10 @@ logs/
 # Node / frontend
 node_modules/
 frontend/node_modules/
+
+# Yerel araç ayarları (makineye özel yollar içerir)
+.claude/launch.json
+.claude/settings.local.json
 
 # Editör / işletim sistemi
 .DS_Store

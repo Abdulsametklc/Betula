@@ -10,6 +10,7 @@ from typing import Generator, Iterable
 from langchain_core.prompts import ChatPromptTemplate
 
 from backend.llm import get_chat_model
+from backend.services.chunking import format_context
 from backend.services.vectorstore import (
     add_to_vector_db as _add,
     create_vector_db as _create,
@@ -70,6 +71,7 @@ KULLANICI SORUSU: {question}
 KRİTİK KURALLAR:
 - SADECE TÜRKÇE YANIT VER.
 - Önce DÖKÜMAN İÇERİĞİNDEKİ bilgileri kullan.
+- Dokümandan aldığın bilginin kaynağını, içerikteki [Kaynak: ...] etiketine göre kısaca belirt (ör. "(ders.pdf · s. 12)").
 - Bilgi dokümanda net yoksa "bilmiyorum / dokümanda yok" deme; kısa ve dürüst bir çerçeve ver, uydurma yapma.
 - Yapılandırılmış ve anlaşılır yanıtlar ver.
 
@@ -131,9 +133,11 @@ def get_ai_response(model_name, vectorstore, user_question, chat_history=None, u
     try:
         user_profile, learning_context = get_personalized_context(user_id=user_id)
         docs = vectorstore.similarity_search(user_question, k=4)
-        pdf_context = "\n\n".join([doc.page_content for doc in docs])
+        pdf_context = format_context(docs)
         prompt = ChatPromptTemplate.from_template(_RAG_TEMPLATE)
-        llm = get_chat_model(temperature=0.1, model_name=model_name if model_name else None)
+        llm = get_chat_model(
+            temperature=0.1, model_name=model_name or None, purpose="chat_rag", user_id=user_id
+        )
         chain = prompt | llm
         response = chain.invoke(
             {
@@ -154,9 +158,11 @@ def stream_ai_response(
 ) -> tuple[Iterable[str], list]:
     user_profile, learning_context = get_personalized_context(user_id=user_id)
     docs = vectorstore.similarity_search(user_question, k=4)
-    pdf_context = "\n\n".join([doc.page_content for doc in docs])
+    pdf_context = format_context(docs)
     prompt = ChatPromptTemplate.from_template(_RAG_TEMPLATE)
-    llm = get_chat_model(temperature=0.1, model_name=model_name if model_name else None)
+    llm = get_chat_model(
+        temperature=0.1, model_name=model_name or None, purpose="chat_rag", user_id=user_id
+    )
     chain = prompt | llm
     inputs = {
         "user_profile": user_profile,
@@ -172,7 +178,9 @@ def get_quick_answer(model_name, question, user_id=None):
     try:
         user_profile, _ = get_personalized_context(user_id=user_id)
         prompt = ChatPromptTemplate.from_template(_QUICK_TEMPLATE)
-        llm = get_chat_model(temperature=0.2, model_name=model_name if model_name else None)
+        llm = get_chat_model(
+            temperature=0.2, model_name=model_name or None, purpose="chat_quick", user_id=user_id
+        )
         chain = prompt | llm
         response = chain.invoke({"user_profile": user_profile, "question": question})
         return response.content
@@ -183,6 +191,8 @@ def get_quick_answer(model_name, question, user_id=None):
 def stream_quick_answer(model_name, question, user_id=None) -> Iterable[str]:
     user_profile, _ = get_personalized_context(user_id=user_id)
     prompt = ChatPromptTemplate.from_template(_QUICK_TEMPLATE)
-    llm = get_chat_model(temperature=0.2, model_name=model_name if model_name else None)
+    llm = get_chat_model(
+        temperature=0.2, model_name=model_name or None, purpose="chat_quick", user_id=user_id
+    )
     chain = prompt | llm
     return _stream_chain(chain, {"user_profile": user_profile, "question": question})

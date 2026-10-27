@@ -5,6 +5,7 @@ Document, Summary, Flashcard ve Quiz CRUD islemleri.
 Her fonksiyon user_id ile calisir - veri izolasyonu garanti.
 """
 
+import json
 from typing import Optional
 from .db import get_db, require_user_id, execute_query, execute_many
 
@@ -12,16 +13,43 @@ from .db import get_db, require_user_id, execute_query, execute_many
 # ============== DOCUMENT FONKSIYONLARI ==============
 
 @require_user_id
-def create_document(filename: str, content: str, doc_type: str, *, user_id: int, checksum: str = None, session_id: int = None) -> int:
-    """Yeni dokuman kaydeder."""
+def create_document(filename: str, content: str, doc_type: str, *, user_id: int, checksum: str = None, session_id: int = None, pages: list = None) -> int:
+    """Yeni dokuman kaydeder. ``pages``: [{"page": int|None, "text": str}, ...]"""
+    pages_json = json.dumps(pages, ensure_ascii=False) if pages else None
     with get_db() as conn:
         cursor = conn.execute(
-            """INSERT INTO documents (user_id, session_id, filename, content, doc_type, checksum) 
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (user_id, session_id, filename, content, doc_type, checksum)
+            """INSERT INTO documents (user_id, session_id, filename, content, doc_type, checksum, pages_json) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (user_id, session_id, filename, content, doc_type, checksum, pages_json)
         )
         conn.commit()
         return cursor.lastrowid
+
+
+@require_user_id
+def set_document_pages(document_id: int, pages: list, *, user_id: int) -> bool:
+    """Eski bir dokumanin sayfa bilgisini sonradan doldurur (yeniden indeksleme icin)."""
+    with get_db() as conn:
+        cursor = conn.execute(
+            "UPDATE documents SET pages_json = ? WHERE id = ? AND user_id = ?",
+            (json.dumps(pages, ensure_ascii=False), document_id, user_id),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+
+def get_document_pages(doc: dict) -> list:
+    """Dokumanin sayfa listesi; sayfa bilgisi olmayan eski kayitlarda tek sayfa doner."""
+    raw = (doc or {}).get("pages_json")
+    if raw:
+        try:
+            pages = json.loads(raw)
+            if isinstance(pages, list) and pages:
+                return pages
+        except (TypeError, ValueError):
+            pass
+    content = (doc or {}).get("content") or ""
+    return [{"page": None, "text": content}] if content else []
 
 
 @require_user_id

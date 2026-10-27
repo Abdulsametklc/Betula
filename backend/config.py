@@ -16,7 +16,9 @@ class Settings(BaseSettings):
 
     groq_api_key: str = ""
     # Fixed default — change only if you know you need another Groq model
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
+    # Hafiza cikarimi, web ozetleri, baslik uretimi gibi hafif isler
+    groq_fast_model: str = "openai/gpt-oss-20b"
 
     jwt_secret: str = "dev-insecure-change-me-to-32chars-min!!"
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days

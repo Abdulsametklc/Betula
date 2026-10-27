@@ -24,7 +24,7 @@ def generate_conversation_title(question: str, answer: str = "") -> str:
     if not q:
         return "Yeni Sohbet"
     try:
-        llm = get_chat_model(temperature=0.2, fast=True)
+        llm = get_chat_model(temperature=0.2, fast=True, purpose="chat_title")
         raw = llm.invoke(
             _TITLE_PROMPT.format(question=q[:500], answer=(a[:700] or "(henuz yok)"))
         )

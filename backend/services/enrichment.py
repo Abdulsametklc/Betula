@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import json
 import re
+import uuid
 from typing import Any
 
 from backend.llm import get_chat_model
-from backend.services.vectorstore import add_to_vector_db
+from backend.services.chunking import SOURCE_EK_BILGI, chunk_id_prefix, chunk_text
+from backend.services.vectorstore import index_chunks
 from modules.repo_pipeline import append_ek_bilgi_to_compiled_note, get_compiled_note_for_document
 
 ASSESS_PROMPT = """Sen bir egitim asistanisin. Kullanici sorusunu ve belge baglamini degerlendir.
@@ -91,7 +93,7 @@ def assess_coverage(*, question: str, context: str) -> dict[str, Any]:
             "search_query": question[:120],
         }
 
-    llm = get_chat_model(temperature=0.0, fast=True)
+    llm = get_chat_model(temperature=0.0, fast=True, purpose="chat_coverage_check")
     response = llm.invoke(
         ASSESS_PROMPT.format(question=question[:800], context=ctx[:8000])
     )
@@ -111,7 +113,7 @@ def research_and_answer(*, question: str, search_query: str, topic: str) -> dict
     results_text = "\n\n".join(
         f"- {h.get('title')}: {h.get('body')} ({h.get('href')})" for h in hits
     )
-    llm = get_chat_model(temperature=0.2, fast=True)
+    llm = get_chat_model(temperature=0.2, fast=True, purpose="chat_web_answer")
     response = llm.invoke(
         ANSWER_FROM_RESEARCH_PROMPT.format(
             question=question,
@@ -180,7 +182,14 @@ def persist_ek_bilgi(
 
     try:
         index_text = f"{topic}\n\n{question}\n\n{summary}\n\n{answer}"
-        add_to_vector_db(index_text, user_id=user_id, session_id=session_id)
+        chunks = chunk_text(index_text, document_id=document_id, source=SOURCE_EK_BILGI)
+        # Her ek bilgi kendi onekini alir; dokuman yeniden derlenince "doc<id>:" ile birlikte silinir
+        index_chunks(
+            chunks,
+            user_id=user_id,
+            session_id=session_id,
+            id_prefix=f"{chunk_id_prefix(document_id)}ek{uuid.uuid4().hex[:8]}:",
+        )
     except Exception as e:
         print(f"Ek bilgi vectorstore hatasi: {e}")
 

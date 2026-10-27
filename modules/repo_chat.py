@@ -258,7 +258,10 @@ def log_model_call(
     prompt_tokens: int = None,
     completion_tokens: int = None,
     latency_ms: int = None,
-    error: str = None
+    error: str = None,
+    purpose: str = None,
+    session_id: int = None,
+    job_id: int = None,
 ) -> int:
     """Model cagrisini loglar (telemetry).
     
@@ -270,6 +273,8 @@ def log_model_call(
         completion_tokens: Yanit token sayisi
         latency_ms: Yanit suresi (ms)
         error: Hata mesaji (varsa)
+        purpose: Cagrinin amaci (gap_analysis, synthesis, chat_rag, chat_request ...)
+        session_id / job_id: Ilgili calisma oturumu / pipeline isi
         
     Returns:
         Log ID
@@ -278,10 +283,10 @@ def log_model_call(
         cursor = conn.execute(
             """INSERT INTO model_calls 
                (user_id, conversation_id, model_name, prompt_tokens, 
-                completion_tokens, latency_ms, error)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                completion_tokens, latency_ms, error, purpose, session_id, job_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (user_id, conversation_id, model_name, prompt_tokens, 
-             completion_tokens, latency_ms, error)
+             completion_tokens, latency_ms, error, purpose, session_id, job_id)
         )
         conn.commit()
         return cursor.lastrowid

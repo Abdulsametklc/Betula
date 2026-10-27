@@ -48,7 +48,7 @@ Tercihlerinizi ve öğrenme bağlamınızı hatırlar; sohbeti size göre şekil
 | Katman | Seçim |
 |--------|--------|
 | API | FastAPI |
-| Dil modeli | Groq (Llama ailesi) |
+| Dil modeli | Groq (GPT-OSS 120B / 20B) |
 | Ajan / boru hattı | LangGraph |
 | Erişim artırımlı üretim | LangChain + FAISS |
 | Belge okuma | PyMuPDF, python-docx |
@@ -58,6 +58,23 @@ Tercihlerinizi ve öğrenme bağlamınızı hatırlar; sohbeti size göre şekil
 | Kimlik | JWT |
 
 Hızlı çıkarım için Groq; yapılandırılmış araştırma için LangGraph; belgeye bağlı cevaplar için RAG. Hepsi tek bir monolit hizmette bir araya gelir — kurması ve anlaması sade, etkisi derin.
+
+---
+
+## Geliştirme
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest                                  # testler (ağ / Groq gerektirmez)
+python -m evaluation.build_dataset                # değerlendirme örnekleri
+python -m evaluation.run_retrieval_eval           # bilgi getirme deneyi
+python -m evaluation.run_gap_eval                 # eksik tespiti deneyi (Groq)
+python scripts/reindex_vectorstores.py --dry-run  # eski indeksleri sayfa/bölüm bilgisiyle yenile
+```
+
+- Yol haritası ve makale planı: [docs/YOL_HARITASI.md](docs/YOL_HARITASI.md)
+- Değerlendirme protokolü: [evaluation/README.md](evaluation/README.md)
+- Kullanılan teknolojilerin öğrenme rehberi: [docs/OGRENME_REHBERI.md](docs/OGRENME_REHBERI.md)
 
 ---
 

@@ -99,6 +99,7 @@ def extract_memory(model_name: str, user_message: str, chat_history: list = None
             temperature=0.1,
             model_name=model_name if model_name else None,
             fast=True,
+            purpose="memory_extract",
         )
         prompt = MEMORY_EXTRACTION_PROMPT.format(message=user_message)
 

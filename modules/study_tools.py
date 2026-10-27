@@ -138,7 +138,7 @@ def generate_summary(text, model_name=None):
             text = text[:60000] + "\n\n[Metin kısaltıldı...]"
 
         prompt = ChatPromptTemplate.from_template(SUMMARY_PROMPT)
-        llm = get_chat_model(temperature=0.3, model_name=model_name)
+        llm = get_chat_model(temperature=0.3, model_name=model_name, purpose="study_summary")
         chain = prompt | llm
         response = chain.invoke({"text": text})
         return response.content
@@ -152,7 +152,7 @@ def generate_flashcards(text, count=10, model_name=None):
             text = text[:50000]
 
         prompt = ChatPromptTemplate.from_template(FLASHCARD_PROMPT)
-        llm = get_chat_model(temperature=0.2, model_name=model_name)
+        llm = get_chat_model(temperature=0.2, model_name=model_name, purpose="study_flashcards")
         chain = prompt | llm
         response = chain.invoke({"text": text, "count": count})
         flashcards = extract_json_from_response(response.content)
@@ -250,7 +250,7 @@ def _normalize_quiz_question(q: dict) -> dict | None:
 def _invoke_quiz_batch(text, count, model_name, topic_instruction, avoid_instruction, avoid_set):
     """Tek bir LLM cagrisindan gecerli sorulari cikarir."""
     prompt = ChatPromptTemplate.from_template(QUIZ_PROMPT)
-    llm = get_chat_model(temperature=0.45, model_name=model_name)
+    llm = get_chat_model(temperature=0.45, model_name=model_name, purpose="study_quiz")
     chain = prompt | llm
     response = chain.invoke(
         {

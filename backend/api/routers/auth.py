@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from backend.auth.deps import CurrentUser
 from backend.auth.jwt import create_access_token
 from backend.config import get_settings
-from backend.llm import FAST_MODEL, QUALITY_MODEL, default_model_name
+from backend.llm import available_models, default_model_name
 from backend.schemas import (
     AvatarIconRequest,
     ChangePasswordRequest,
@@ -370,8 +370,5 @@ def list_models():
     return {
         "default": default_model_name(),
         "provider": "groq",
-        "models": [
-            {"id": QUALITY_MODEL, "label": "Llama 3.3 70B (kalite)"},
-            {"id": FAST_MODEL, "label": "Llama 3.1 8B (hizli)"},
-        ],
+        "models": available_models(),
     }

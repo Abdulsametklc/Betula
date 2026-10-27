@@ -14,8 +14,14 @@ from langgraph.graph import END, StateGraph
 
 from backend.config import get_settings
 from backend.llm import get_chat_model
-from backend.services.vectorstore import create_vector_db
-from modules.repo_documents import get_document, mark_document_processed
+from backend.services.chunking import (
+    SOURCE_COMPILED_NOTE,
+    chunk_id_prefix,
+    chunk_pages,
+    chunk_text,
+)
+from backend.services.vectorstore import index_chunks
+from modules.repo_documents import get_document, get_document_pages, mark_document_processed
 from modules.repo_pipeline import save_compiled_note, update_pipeline_job
 
 
@@ -86,6 +92,15 @@ def _parse_json_object(text: str) -> dict:
         return {}
 
 
+def _telemetry(state: PipelineState) -> dict:
+    """LLM cagri loglarini kullanici / oturum / pipeline isine baglar."""
+    return {
+        "user_id": state.get("user_id"),
+        "session_id": state.get("session_id"),
+        "job_id": state.get("job_id"),
+    }
+
+
 def _set_step(state: PipelineState, step: str, status: str = "running") -> None:
     update_pipeline_job(
         state["job_id"],
@@ -108,21 +123,24 @@ def node_parse(state: PipelineState) -> PipelineState:
     return {**state, "text": text, "session_id": session_id}
 
 
-def node_gap_analysis(state: PipelineState) -> PipelineState:
-    if state.get("error"):
-        return state
-    _set_step(state, "gap_analysis")
-    settings = get_settings()
-    llm = get_chat_model(temperature=0.1)
-    prompt = GAP_PROMPT.format(text=state["text"][:40_000], max_gaps=settings.max_gaps)
+def analyze_gaps(text: str, *, max_gaps: int, llm=None, **telemetry) -> dict:
+    """Eksik analizi adimi; pipeline ve degerlendirme betikleri ayni fonksiyonu kullanir."""
+    llm = llm or get_chat_model(temperature=0.1, purpose="gap_analysis", **telemetry)
+    prompt = GAP_PROMPT.format(text=text[:40_000], max_gaps=max_gaps)
     response = llm.invoke(prompt)
     data = _parse_json_object(response.content or "")
     gaps = data.get("gaps") or []
     if not isinstance(gaps, list):
         gaps = []
-    gaps = gaps[: settings.max_gaps]
-    outline = data.get("outline") or ""
-    return {**state, "gaps": gaps, "outline": outline}
+    return {"gaps": gaps[:max_gaps], "outline": data.get("outline") or ""}
+
+
+def node_gap_analysis(state: PipelineState) -> PipelineState:
+    if state.get("error"):
+        return state
+    _set_step(state, "gap_analysis")
+    result = analyze_gaps(state["text"], max_gaps=get_settings().max_gaps, **_telemetry(state))
+    return {**state, "gaps": result["gaps"], "outline": result["outline"]}
 
 
 def _ddg_search(query: str, max_results: int = 3) -> list[dict]:
@@ -143,7 +161,7 @@ def _ddg_search(query: str, max_results: int = 3) -> list[dict]:
         return [{"title": "search_error", "href": "", "body": str(e)}]
 
 
-def _research_one_gap(gap: dict) -> dict[str, Any]:
+def _research_one_gap(gap: dict, telemetry: dict | None = None) -> dict[str, Any]:
     """Tek bir gap icin arama + LLM ozeti (thread-safe; her cagri kendi LLM istemcisini acar)."""
     topic = gap.get("topic") or gap.get("search_query") or "konu"
     query = gap.get("search_query") or topic
@@ -151,7 +169,7 @@ def _research_one_gap(gap: dict) -> dict[str, Any]:
     results_text = "\n\n".join(
         f"- {h.get('title')}: {h.get('body')} ({h.get('href')})" for h in hits
     )
-    llm = get_chat_model(temperature=0.2, fast=True)
+    llm = get_chat_model(temperature=0.2, fast=True, purpose="web_research_summary", **(telemetry or {}))
     summary = llm.invoke(
         RESEARCH_SUMMARY_PROMPT.format(topic=topic, results=results_text or "Sonuc yok")
     )
@@ -180,7 +198,7 @@ def node_web_research(state: PipelineState) -> PipelineState:
     workers = min(len(gaps), 3)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        future_map = {pool.submit(_research_one_gap, gap): i for i, gap in enumerate(gaps)}
+        future_map = {pool.submit(_research_one_gap, gap, _telemetry(state)): i for i, gap in enumerate(gaps)}
         for fut in as_completed(future_map):
             idx = future_map[fut]
             try:
@@ -209,7 +227,7 @@ def node_synthesis(state: PipelineState) -> PipelineState:
     if state.get("error"):
         return state
     _set_step(state, "synthesis")
-    llm = get_chat_model(temperature=0.3)
+    llm = get_chat_model(temperature=0.3, purpose="synthesis", **_telemetry(state))
     research_blob = json.dumps(state.get("research") or [], ensure_ascii=False, indent=2)
     response = llm.invoke(
         SYNTHESIS_PROMPT.format(text=state["text"][:35_000], research=research_blob)
@@ -261,13 +279,25 @@ def node_persist(state: PipelineState) -> PipelineState:
         session_id=state.get("session_id"),
     )
 
-    # Index compiled note + original text for RAG
-    index_text = (state.get("text") or "") + "\n\n" + markdown
-    create_vector_db(
-        index_text,
+    # RAG indeksi: kirpilmamis orijinal sayfalar + sentez notu, sayfa bilgisiyle.
+    # Ayni dokumanin eski parcalari degistirilir; oturumdaki diger dokumanlar korunur.
+    doc = get_document(state["document_id"], user_id=state["user_id"]) or {}
+    chunks = chunk_pages(
+        get_document_pages(doc),
+        document_id=state["document_id"],
+        filename=doc.get("filename"),
+    ) + chunk_text(
+        markdown,
+        document_id=state["document_id"],
+        filename=doc.get("filename"),
+        source=SOURCE_COMPILED_NOTE,
+    )
+    index_chunks(
+        chunks,
         user_id=state["user_id"],
-        persist=True,
         session_id=state.get("session_id"),
+        id_prefix=chunk_id_prefix(state["document_id"]),
+        replace=True,
     )
     mark_document_processed(state["document_id"], user_id=state["user_id"])
 

@@ -8,7 +8,7 @@ import os
 import re
 from typing import Any
 
-import fitz
+import pymupdf as fitz
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor

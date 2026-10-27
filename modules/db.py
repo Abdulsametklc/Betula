@@ -459,6 +459,8 @@ def init_db():
         conn.execute('CREATE INDEX IF NOT EXISTS idx_study_sessions_user ON study_sessions(user_id)')
 
         _ensure_session_columns(conn)
+        _ensure_document_columns(conn)
+        _ensure_model_call_columns(conn)
         _ensure_user_profile_columns(conn)
         _ensure_security_codes_table(conn)
         _backfill_default_sessions(conn)
@@ -485,6 +487,28 @@ def _ensure_security_codes_table(conn):
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_security_codes_user_purpose ON security_codes(user_id, purpose)"
     )
+
+
+def _ensure_document_columns(conn):
+    """documents tablosuna sayfa bazli metin (pages_json) kolonunu ekler."""
+    try:
+        cols = {c[1] for c in conn.execute("PRAGMA table_info(documents)").fetchall()}
+        if "pages_json" not in cols:
+            conn.execute("ALTER TABLE documents ADD COLUMN pages_json TEXT")
+    except Exception as e:
+        print(f"documents migration warning: {e}")
+
+
+def _ensure_model_call_columns(conn):
+    """model_calls tablosuna cagri amaci ve oturum / pipeline isi kolonlarini ekler."""
+    try:
+        cols = {c[1] for c in conn.execute("PRAGMA table_info(model_calls)").fetchall()}
+        for name, ddl in (("purpose", "TEXT"), ("session_id", "INTEGER"), ("job_id", "INTEGER")):
+            if name not in cols:
+                conn.execute(f"ALTER TABLE model_calls ADD COLUMN {name} {ddl}")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_model_calls_purpose ON model_calls(purpose)")
+    except Exception as e:
+        print(f"model_calls migration warning: {e}")
 
 
 def _ensure_user_profile_columns(conn):

@@ -17,6 +17,7 @@ from backend.services.enrichment import (
     persist_ek_bilgi,
     research_and_answer,
 )
+from backend.services.chunking import format_context, format_source
 from backend.services.vectorstore import load_vector_db
 from modules.memory_engine import format_memory_response, process_memory_extraction
 from modules.rag_engine import (
@@ -145,7 +146,7 @@ def _build_context_snippet(
     if vectorstore is not None:
         try:
             docs = vectorstore.similarity_search(question, k=4)
-            bits.append("\n\n".join(d.page_content for d in docs))
+            bits.append(format_context(docs))
         except Exception:
             docs = []
 
@@ -222,7 +223,7 @@ def _resolve_answer(ctx: dict) -> tuple[Iterable[str], list[str], dict]:
             chat_history=ctx["chat_history"],
             user_id=user_id,
         )
-        sources = [d.page_content[:200] for d in (rag_docs or docs or [])]
+        sources = [format_source(d) for d in (rag_docs or docs or [])]
         return token_iter, sources, meta
 
     if document_id:
@@ -256,7 +257,7 @@ def _normal_stream(
             chat_history=ctx["chat_history"],
             user_id=user_id,
         )
-        sources = [d.page_content[:200] for d in (rag_docs or docs or [])]
+        sources = [format_source(d) for d in (rag_docs or docs or [])]
         return token_iter, sources
 
     if document_id:
@@ -308,7 +309,7 @@ def chat_completions(body: ChatRequest, user: CurrentUser, session: CurrentSessi
                     chat_history=ctx["chat_history"],
                     user_id=user_id,
                 )
-                sources = [d.page_content[:200] for d in (docs or [])]
+                sources = [format_source(d) for d in (docs or [])]
             else:
                 reply = get_quick_answer(model, body.message, user_id=user_id)
     except Exception as e:
@@ -322,6 +323,8 @@ def chat_completions(body: ChatRequest, user: CurrentUser, session: CurrentSessi
         conversation_id=conversation_id,
         latency_ms=latency_ms,
         error=error,
+        purpose="chat_request",
+        session_id=ctx.get("session_id"),
     )
 
     if memory_note:
@@ -437,6 +440,8 @@ def chat_completions_stream(body: ChatRequest, user: CurrentUser, session: Curre
             conversation_id=conversation_id,
             latency_ms=latency_ms,
             error=error,
+            purpose="chat_request",
+            session_id=ctx.get("session_id"),
         )
         create_message(conversation_id, "assistant", reply, user_id=user_id)
 

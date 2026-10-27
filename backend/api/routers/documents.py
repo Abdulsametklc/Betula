@@ -80,6 +80,7 @@ async def upload_document(
         user_id=user["id"],
         checksum=parsed["checksum"],
         session_id=session["id"],
+        pages=parsed["pages"],
     )
     touch_session(session["id"], user_id=user["id"])
 
