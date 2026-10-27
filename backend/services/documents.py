@@ -7,15 +7,15 @@ import io
 import os
 from typing import BinaryIO, Union
 
-import pymupdf as fitz
 from docx import Document
 
-from backend.services.sections import MAX_HEADING_CHARS
+from backend.services.pdf_reader import read_pdf_pages
 
 
 FileLike = Union[BinaryIO, bytes]
 
-# Her sayfa: {"page": 1-tabanli sayfa no (DOCX/metin icin None), "text": str}
+# Her sayfa: {"page": 1-tabanli sayfa no (DOCX/metin icin None), "text": str,
+#             "slides": [[metin_ofseti, "1.5"], ...] (yalnizca slayt PDF'lerinde)}
 Page = dict
 
 
@@ -27,71 +27,12 @@ def checksum_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-# Govde metninden en az bu oranda buyuk punto ile yazilmis kisa satirlar baslik sayilir
-HEADING_SIZE_RATIO = 1.2
-
-
-def _pdf_lines(page) -> list[tuple[str, float]]:
-    """Sayfadaki satirlar ve her satirin en buyuk punto degeri."""
-    lines: list[tuple[str, float]] = []
-    for block in page.get_text("dict").get("blocks", []):
-        if block.get("type") != 0:  # 0 = metin, 1 = gorsel
-            continue
-        for line in block.get("lines", []):
-            spans = [s for s in line.get("spans", []) if s.get("text", "").strip()]
-            if spans:
-                text = "".join(s["text"] for s in line["spans"]).strip()
-                lines.append((text, max(s.get("size", 0) for s in spans)))
-    return lines
-
-
-def _body_font_size(all_lines: list[tuple[str, float]]) -> float:
-    """Karakter sayisina gore agirlikli en yaygin punto (govde metni)."""
-    weights: dict[float, int] = {}
-    for text, size in all_lines:
-        key = round(size, 1)
-        weights[key] = weights.get(key, 0) + len(text)
-    return max(weights, key=weights.get) if weights else 0.0
-
-
-_BULLETS = ("•", "-", "–", "*", "▪", "●", "○", "◦", "")  # : Word/PowerPoint Symbol fontu madde isareti
-
-
-def _mark_headings(lines: list[tuple[str, float]], threshold: float) -> list[str]:
-    """Esigi asan satirlari ``# Baslik`` yapar; ayni puntodaki ardisik baslik satirlarini birlestirir."""
-    out: list[str] = []
-    prev_size = None
-    for text, size in lines:
-        is_heading = (
-            threshold
-            and size >= threshold
-            and not text.startswith(_BULLETS + ("#",))
-        )
-        if is_heading and prev_size == size and len(out[-1]) + len(text) < MAX_HEADING_CHARS:
-            out[-1] = f"{out[-1]} {text}"  # iki satira tasan baslik
-            continue
-        out.append(f"# {text}" if is_heading and len(text) <= MAX_HEADING_CHARS else text)
-        prev_size = size if is_heading else None
-    return out
-
-
 def get_pdf_pages_from_bytes(data: bytes) -> list[Page]:
-    """Sayfa bazli metin; govdeden belirgin buyuk puntolu kisa satirlar ``# Baslik`` olur.
+    """Sayfa bazli metin; basliklar ``# Baslik``, slayt numaralari ``slides`` alaninda.
 
-    Esik hem belgenin hem sayfanin govde puntosuna gore alinir; boylece slaytlarda buyuk
-    yazilmis govde metni baslik sanilmaz.
+    Ayrintilar: :mod:`backend.services.pdf_reader`
     """
-    with fitz.open(stream=data, filetype="pdf") as doc:
-        page_lines = [(index, _pdf_lines(page)) for index, page in enumerate(doc, start=1)]
-
-    doc_body = _body_font_size([ln for _, lines in page_lines for ln in lines])
-    pages: list[Page] = []
-    for index, lines in page_lines:
-        threshold = max(doc_body, _body_font_size(lines)) * HEADING_SIZE_RATIO
-        page_text = "\n".join(_mark_headings(lines, threshold)).strip()
-        if page_text:
-            pages.append({"page": index, "text": page_text})
-    return pages
+    return read_pdf_pages(data)
 
 
 def get_pdf_text_from_bytes(data: bytes) -> str:

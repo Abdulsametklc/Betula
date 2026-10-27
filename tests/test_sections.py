@@ -12,6 +12,10 @@ def test_heading_rules():
     assert not is_heading("1. adımda hız artar.")
     assert not is_heading("Not: aşağıdaki tabloya bakın:")
     assert clean_heading("## 3.2) Serbest Düşme") == "Serbest Düşme"
+    assert clean_heading("# Karnaugh Diyagramları (devamı):") == "Karnaugh Diyagramları"
+    assert not is_heading("A'BCD")  # formul / tek kelimelik BUYUK HARF parca
+    assert not is_heading("F1 = A C' + A B")
+    assert not is_heading("8 bit +5")
 
 
 def test_iter_blocks_carries_previous_section():

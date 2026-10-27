@@ -50,6 +50,35 @@ def test_full_mode_removes_heading(sample_doc):
     assert gaps[0].title not in "\n".join(p["text"] for p in pages)
 
 
+def test_continued_slides_are_one_topic():
+    body = "Bu konunun anlatimi icin yeterince uzun bir govde metni yazilmistir. " * 3
+    pages = [
+        {"page": 1, "text": f"# Karnaugh Diyagramlari\n{body}\n# Gray Kodu\n{body}"},
+        {"page": 2, "text": f"# Karnaugh Diyagramlari (devamı)\n{body}x\n# Hamming\n{body}"},
+    ]
+    _, gaps = inject_gaps(pages, k=3, seed=1)
+    assert sorted(g.title for g in gaps) == ["Gray Kodu", "Hamming", "Karnaugh Diyagramlari"]
+    karnaugh = next(g for g in gaps if g.title == "Karnaugh Diyagramlari")
+    assert karnaugh.removed_text.count("anlatimi") == 6  # iki slaytin govdesi birlikte silindi
+
+
+def test_titles_repeated_on_many_slides_are_not_gaps():
+    body = "Her slaytta tekrar eden ders basligi altinda uzunca bir aciklama metni. " * 3
+    pages = [{"page": i, "text": f"# Orthographic Projection\n{body}{i}"} for i in range(1, 6)]
+    pages.append({"page": 6, "text": f"# Gorunuslerin Cizilmesi\n{body}"})
+    _, gaps = inject_gaps(pages, k=1, seed=1)
+    assert gaps[0].title == "Gorunuslerin Cizilmesi"
+    with pytest.raises(ValueError):
+        inject_gaps(pages, k=2, seed=1)
+
+
+def test_injection_drops_stale_slide_offsets():
+    body = "Slayt govdesi icin yeterince uzun bir aciklama metni burada yer aliyor. " * 3
+    pages = [{"page": 1, "text": f"# A Konusu\n{body}\n# B Konusu\n{body}", "slides": [[0, "1.1"]]}]
+    new_pages, _ = inject_gaps(pages, k=1, seed=1)
+    assert "slides" not in new_pages[0] and "slides" in pages[0]
+
+
 def test_injection_rejects_too_many_gaps(sample_doc):
     with pytest.raises(ValueError):
         inject_gaps(sample_doc.pages, k=50, seed=1)

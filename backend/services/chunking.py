@@ -6,6 +6,7 @@ Her parca bir LangChain ``Document``'tir; ``metadata`` alanlari:
 - ``document_id`` : kaynak dokuman id (yoksa None)
 - ``filename``    : kaynak dosya adi (yoksa None)
 - ``page``        : 1-tabanli sayfa no (sayfasiz kaynaklarda None)
+- ``slide``       : slayt numarasi, or. "1.5" (slayt PDF'i degilse None)
 - ``section``     : parcanin ait oldugu bolum basligi (tespit edilemezse None)
 - ``chunk_index`` : kaynak icindeki sira (0'dan)
 - ``start_index`` : parcanin sayfa/metin icindeki karakter konumu
@@ -52,10 +53,10 @@ def chunk_pages(
     filename: Optional[str] = None,
     source: str = SOURCE_DOCUMENT,
 ) -> list[Document]:
-    """Sayfa listesini ({"page", "text"}) metadata'li parcalara boler.
+    """Sayfa listesini ({"page", "text", "slides"?}) metadata'li parcalara boler.
 
-    Parcalar bolum basliklarinda da kesilir; bir sayfa basliksiz basliyorsa onceki
-    sayfanin bolumu devam ediyor kabul edilir.
+    Parcalar bolum basliklarinda ve slayt sinirlarinda da kesilir; bir sayfa basliksiz
+    basliyorsa onceki sayfanin bolumu devam ediyor kabul edilir.
     """
     splitter = _splitter()
     chunks: list[Document] = []
@@ -64,26 +65,36 @@ def chunk_pages(
         text = (page.get("text") or "").strip()
         if not text:
             continue
+        slides = sorted((int(o), str(label)) for o, label in page.get("slides") or [])
         for start, end, section in iter_blocks(text, current=section):
-            block = text[start:end]
-            if not block.strip():
-                continue
-            for piece in splitter.create_documents([block]):
-                chunks.append(
-                    Document(
-                        page_content=piece.page_content,
-                        metadata={
-                            "source": source,
-                            "document_id": document_id,
-                            "filename": filename,
-                            "page": page.get("page"),
-                            "section": section,
-                            "chunk_index": len(chunks),
-                            "start_index": start + piece.metadata.get("start_index", 0),
-                        },
+            for s, e in _split_at(start, end, [o for o, _ in slides]):
+                block = text[s:e]
+                if not block.strip():
+                    continue
+                slide = next((label for o, label in reversed(slides) if o <= s), None)
+                for piece in splitter.create_documents([block]):
+                    chunks.append(
+                        Document(
+                            page_content=piece.page_content,
+                            metadata={
+                                "source": source,
+                                "document_id": document_id,
+                                "filename": filename,
+                                "page": page.get("page"),
+                                "slide": slide,
+                                "section": section,
+                                "chunk_index": len(chunks),
+                                "start_index": s + piece.metadata.get("start_index", 0),
+                            },
+                        )
                     )
-                )
     return chunks
+
+
+def _split_at(start: int, end: int, cuts: list[int]) -> list[tuple[int, int]]:
+    """[start, end) araligini icindeki kesim noktalarindan boler."""
+    points = [start] + [c for c in cuts if start < c < end] + [end]
+    return list(zip(points, points[1:]))
 
 
 def chunk_text(
@@ -108,7 +119,7 @@ def chunk_ids(chunks: list[Document], *, prefix: str) -> list[str]:
 
 
 def format_citation(doc: Document) -> str:
-    """Kullaniciya gosterilecek kisa kaynak etiketi, or. ``ders.pdf · s. 12``."""
+    """Kullaniciya gosterilecek kisa kaynak etiketi, or. ``ders.pdf · s. 3 / slayt 1.5 · BCD``."""
     meta = doc.metadata or {}
     source = meta.get("source")
     if source == SOURCE_COMPILED_NOTE:
@@ -119,6 +130,8 @@ def format_citation(doc: Document) -> str:
         label = meta.get("filename") or "Dokuman"
     if meta.get("page") is not None:
         label += f" · s. {meta['page']}"
+        if meta.get("slide") and str(meta["slide"]) != str(meta["page"]):
+            label += f" / slayt {meta['slide']}"
     if meta.get("section"):
         section = meta["section"]
         label += f" · {section[:40] + '…' if len(section) > 40 else section}"

@@ -53,6 +53,19 @@ class InjectedGap:
     removed_text: str
 
 
+# Ayni baslik bundan fazla bolumde geciyorsa (or. her slaytta tekrar eden ders basligi)
+# o baslik bir "konu" degildir; eksik olarak secilmez.
+MAX_SECTIONS_PER_TOPIC = 3
+
+
+def topics(sections: list[Section]) -> dict[str, list[Section]]:
+    """Bolumleri basliga gore konulara toplar ("X" ve "X (devami)" ayni konudur)."""
+    grouped: dict[str, list[Section]] = {}
+    for sec in sections:
+        grouped.setdefault(sec.title.casefold(), []).append(sec)
+    return grouped
+
+
 def inject_gaps(
     pages: list[dict],
     *,
@@ -61,24 +74,37 @@ def inject_gaps(
     mode: str = "body",
     min_body_chars: int = 150,
 ) -> tuple[list[dict], list[InjectedGap]]:
-    """``k`` bolumu siler; (eksikli sayfalar, ground-truth eksik listesi) dondurur."""
+    """``k`` konuyu siler; (eksikli sayfalar, ground-truth eksik listesi) dondurur.
+
+    Bir konu birden fazla slayta yayiliyorsa ("... (devami)") hepsi birlikte silinir.
+    """
     if mode not in MODES:
         raise ValueError(f"mode {MODES} olmali")
-    sections = split_sections(pages)
-    eligible = [i for i, s in enumerate(sections) if len(s.body) >= min_body_chars]
+    grouped = topics(split_sections(pages))
+    eligible = [
+        key
+        for key, secs in grouped.items()
+        if len(secs) <= MAX_SECTIONS_PER_TOPIC and sum(len(s.body) for s in secs) >= min_body_chars
+    ]
     if len(eligible) < k:
         raise ValueError(f"Yeterli bolum yok: {len(eligible)} uygun bolum, {k} istendi")
 
-    chosen = sorted(random.Random(seed).sample(eligible, k))
-    new_pages = [dict(p) for p in pages]
+    chosen = sorted(random.Random(seed).sample(eligible, k), key=eligible.index)
+    # Silinen metin konumlari degistirdigi icin slayt ofsetleri eksikli kopyada tutulmaz
+    new_pages = [{key: v for key, v in p.items() if key != "slides"} for p in pages]
     gaps: list[InjectedGap] = []
-    for n, idx in enumerate(chosen):
-        sec = sections[idx]
-        page = next(p for p in new_pages if p["page"] == sec.page)
-        removed = sec.body if mode == "body" else f"{sec.heading}\n{sec.body}"
-        page["text"] = page["text"].replace(removed, "", 1)
-        page["text"] = re.sub(r"\n{3,}", "\n\n", page["text"]).strip()
-        gaps.append(InjectedGap(f"g{n + 1}", sec.title, sec.page, removed))
+    for n, key in enumerate(chosen):
+        secs = grouped[key]
+        removed_parts = []
+        for sec in secs:
+            page = next(p for p in new_pages if p["page"] == sec.page)
+            removed = sec.body if mode == "body" else f"{sec.heading}\n{sec.body}"
+            if not removed.strip():
+                continue
+            page["text"] = page["text"].replace(removed, "", 1)
+            page["text"] = re.sub(r"\n{3,}", "\n\n", page["text"]).strip()
+            removed_parts.append(removed)
+        gaps.append(InjectedGap(f"g{n + 1}", secs[0].title, secs[0].page, "\n\n".join(removed_parts)))
     return new_pages, gaps
 
 
