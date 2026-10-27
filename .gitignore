@@ -1,17 +1,41 @@
+# Ortam / gizli anahtarlar
 .env
+.env.*
+!.env.example
+
+# Python
 .venv/
 venv/
 __pycache__/
 **/__pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
 .pytest_cache/
 .mypy_cache/
-data/uploads/
-data/vectorstore/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Çalışma zamanı verisi (kullanıcı verisi repoya girmez)
+data/
+uploads/
+vectorstore/
 *.db
-!LocalInsights.db
-.DS_Store
-.idea/
-.vscode/
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.log
+logs/
+
+# Node / frontend
 node_modules/
 frontend/node_modules/
+
+# Editör / işletim sistemi
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
