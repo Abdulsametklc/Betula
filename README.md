@@ -72,9 +72,7 @@ python -m evaluation.run_gap_eval                 # eksik tespiti deneyi (Groq)
 python scripts/reindex_vectorstores.py --dry-run  # eski indeksleri sayfa/bölüm bilgisiyle yenile
 ```
 
-- Yol haritası ve makale planı: [docs/YOL_HARITASI.md](docs/YOL_HARITASI.md)
-- Değerlendirme protokolü: [evaluation/README.md](evaluation/README.md)
-- Kullanılan teknolojilerin öğrenme rehberi: [docs/OGRENME_REHBERI.md](docs/OGRENME_REHBERI.md)
+Değerlendirme protokolü: [evaluation/README.md](evaluation/README.md)
 
 ---
 
